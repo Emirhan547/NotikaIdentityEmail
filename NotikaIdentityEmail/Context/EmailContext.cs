@@ -10,5 +10,7 @@ namespace NotikaIdentityEmail.Context
         {
             optionsBuilder.UseSqlServer("Server=localhost\\SQLEXPRESS;initial Catalog=NotikaEmailDb;integrated security=true;trustServerCertificate=true");
         }
+        public DbSet<Category>Categories { get; set; }
+        public DbSet<Message>Messages { get; set; }
     }
 }
