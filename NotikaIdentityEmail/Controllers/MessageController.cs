@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using NotikaIdentityEmail.Context;
@@ -31,7 +31,7 @@ namespace NotikaIdentityEmail.Controllers
                           on m.CategoryId equals c.CategoryId into categoryGroup
                           from category in categoryGroup.DefaultIfEmpty()
 
-                          where m.ReceiverMail == user.Email
+                          where m.ReceiverEmail == user.Email
                           select new MessageWithSenderInfoViewModel
                           {
                               MessageId = m.MessageId,
@@ -53,7 +53,7 @@ namespace NotikaIdentityEmail.Controllers
 
             var values = (from m in _context.Messages
                           join u in _context.Users
-                          on m.ReceiverMail equals u.Email into userGroup
+                          on m.ReceiverEmail equals u.Email into userGroup
                           from receiver in userGroup.DefaultIfEmpty()
 
                           join c in _context.Categories
@@ -67,7 +67,7 @@ namespace NotikaIdentityEmail.Controllers
                               MessageDetail = m.MessageDetail,
                               Subject = m.Subject,
                               SendDate = m.SendDate,
-                              ReceiverEmail = m.ReceiverMail,
+                              ReceiverEmail = m.ReceiverEmail,
                               ReceiverName = receiver != null ? receiver.Name : "Bilinmeyen",
                               ReceiverSurname = receiver != null ? receiver.Surname : "Kullanıcı",
                               CategoryName = category != null ? category.CategoryName : "Kategori Yok"
@@ -103,6 +103,33 @@ namespace NotikaIdentityEmail.Controllers
             _context.SaveChanges();
             return RedirectToAction("Sendbox");
 
+        }
+        public async Task<IActionResult>GetMessageListByCategory(int id)
+        {
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+
+            var values = (from m in _context.Messages
+                          join u in _context.Users
+                          on m.SenderEmail equals u.Email into userGroup
+                          from sender in userGroup.DefaultIfEmpty()
+
+                          join c in _context.Categories
+                          on m.CategoryId equals c.CategoryId into categoryGroup
+                          from category in categoryGroup.DefaultIfEmpty()
+
+                          where m.ReceiverEmail == user.Email && m.CategoryId==id
+                          select new MessageWithSenderInfoViewModel
+                          {
+                              MessageId = m.MessageId,
+                              MessageDetail = m.MessageDetail,
+                              Subject = m.Subject,
+                              SendDate = m.SendDate,
+                              SenderEmail = m.SenderEmail,
+                              SenderName = sender != null ? sender.Name : "Bilinmeyen",
+                              SenderSurname = sender != null ? sender.Surname : "Kullanıcı",
+                          }).ToList();
+
+            return View(values);
         }
     }
 }

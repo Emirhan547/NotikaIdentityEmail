@@ -21,7 +21,7 @@ namespace NotikaIdentityEmail.ViewComponents.Message
         {
             var user = await _userManager.FindByNameAsync(User.Identity.Name);
             ViewBag.sendMessageCount = _emailContext.Messages.Where(x => x.SenderEmail == user.Email).Count();
-            ViewBag.receiveMessageCount = _emailContext.Messages.Where(x => x.ReceiverMail == user.Email).Count();
+            ViewBag.receiveMessageCount = _emailContext.Messages.Where(x => x.ReceiverEmail == user.Email).Count();
             return View();
         }
     }

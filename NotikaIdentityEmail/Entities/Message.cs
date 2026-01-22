@@ -4,7 +4,7 @@
     {
         public int MessageId { get; set; }
         public string SenderEmail { get; set; }
-        public string ReceiverMail { get; set; }
+        public string ReceiverEmail { get; set; }
         public string Subject { get; set; }
         public string MessageDetail { get; set; }
         public bool IsRead { get; set; }

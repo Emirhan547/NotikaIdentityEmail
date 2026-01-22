@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace NotikaIdentityEmail.ViewComponents._UILayout
+namespace NotikaIdentityEmail.ViewComponents
 {
-    public class _UILayoutHeadViewComponent:ViewComponent
+    public class _HeadUserLayoutComponentPartial : ViewComponent
     {
         public IViewComponentResult Invoke()
         {

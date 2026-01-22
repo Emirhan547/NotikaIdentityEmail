@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NotikaIdentityEmail.Context;
 using NotikaIdentityEmail.Entities;
@@ -26,16 +26,25 @@ namespace NotikaIdentityEmail.Controllers
         public async Task<IActionResult> UserLogin(UserLoginViewModel model)
         {
             var value=_emailContext.Users.Where(x=>x.UserName==model.Username).FirstOrDefault();
-            if (value.EmailConfirmed==true)
+            if (value == null)
             {
+                ModelState.AddModelError(string.Empty, "Kullanıcı bulunamadı.");
+                return View(model);
+            }
+            if (!value.EmailConfirmed)
+            {
+                ModelState.AddModelError(string.Empty, "Email Adresiniz henüz onaylanmamış");
+                return View(model);
+            }
                 var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, true, false);
                 if (result.Succeeded)
                 {
-                    return RedirectToAction("Profile", "EditProfile");
+                    return RedirectToAction("EditProfile", "Profile");
                 }
-                return View();
+            ModelState.AddModelError(string.Empty, "Kullanıcı Adı veya Şifre Yanlış");
+                return View(model);
             }           
-            return View();
+
         }
     }
-}
+ 

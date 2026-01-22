@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NotikaIdentityEmail.Context;
 
@@ -11,9 +12,11 @@ using NotikaIdentityEmail.Context;
 namespace NotikaIdentityEmail.Migrations
 {
     [DbContext(typeof(EmailContext))]
-    partial class EmailContextModelSnapshot : ModelSnapshot
+    [Migration("20260122130340_mig8")]
+    partial class mig8
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -261,36 +264,6 @@ namespace NotikaIdentityEmail.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("NotikaIdentityEmail.Entities.Comment", b =>
-                {
-                    b.Property<int>("CommentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommentId"));
-
-                    b.Property<string>("AppUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CommentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CommentDetail")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CommentStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("CommentId");
-
-                    b.HasIndex("AppUserId");
-
-                    b.ToTable("Comments");
-                });
-
             modelBuilder.Entity("NotikaIdentityEmail.Entities.Message", b =>
                 {
                     b.Property<int>("MessageId")
@@ -403,17 +376,6 @@ namespace NotikaIdentityEmail.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("NotikaIdentityEmail.Entities.Comment", b =>
-                {
-                    b.HasOne("NotikaIdentityEmail.Entities.AppUser", "AppUser")
-                        .WithMany("Comments")
-                        .HasForeignKey("AppUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AppUser");
-                });
-
             modelBuilder.Entity("NotikaIdentityEmail.Entities.Message", b =>
                 {
                     b.HasOne("NotikaIdentityEmail.Entities.Category", "Category")
@@ -423,11 +385,6 @@ namespace NotikaIdentityEmail.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("NotikaIdentityEmail.Entities.AppUser", b =>
-                {
-                    b.Navigation("Comments");
                 });
 #pragma warning restore 612, 618
         }
