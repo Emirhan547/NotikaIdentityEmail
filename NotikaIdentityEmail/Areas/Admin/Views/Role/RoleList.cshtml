@@ -1,9 +1,9 @@
-﻿@using NotikaIdentityEmail.Entities
-@model List<AppUser>
+﻿@using Microsoft.AspNetCore.Identity
+@model List<IdentityRole>
 
 @{
-    ViewData["Title"] = "UserList";
-    Layout = "~/Views/UserLayout/Index.cshtml";
+    ViewData["Title"] = "RoleList";
+   
     int count = 0;
 }
 
@@ -13,35 +13,33 @@
             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                 <div class="form-element-list">
                     <div class="basic-tb-hd">
-                        <h2>Kullanıcı Listesi</h2>
+                        <h2>Rol Listesi</h2>
                     </div>
                     <div class="row">
 
                         <table class="table table-bordered">
                             <tr>
                                 <th>#</th>
-                                <th>Ad Soyad</th>
-                                <th>Kullanıcı Adı</th>
-                                <th>Kullanıcı Email</th>
-                                <th>Rol Ata</th>
+                                <th>Rol Adı</th>
+                                <th>Rol Sil</th>
+                                <th>Rol Güncelle</th>
                             </tr>
                             @foreach (var item in Model)
                             {
                                 count++;
                                 <tr>
                                     <td>@count</td>
-                                    <td>@item.Name @item.Surname</td>
-                                    <td>@item.UserName</td>
-                                    <td>@item.Email</td>
-                                    <td><a href="/Role/AssignRole/@item.Id/" class="btn btn-warning">Rol Ata</a></td>
+                                    <td>@item.Name</td>
+                                    <td><a asp-area="Admin" asp-controller="Role" asp-action="DeleteRole" asp-route-id="@item.Id" class="btn btn-danger">Sil</a></td>
+                                    <td><a asp-area="Admin" asp-controller="Role" asp-action="UpdateRole" asp-route-id="@item.Id" class="btn btn-success">Güncelle</a></td>
                                 </tr>
                             }
                         </table>
+                        <a asp-area="Admin" asp-controller="Role" asp-action="CreateRole" class="btn btn-primary">Yeni Rol Girişi</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
 

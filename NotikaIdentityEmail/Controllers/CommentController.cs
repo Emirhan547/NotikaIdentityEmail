@@ -1,4 +1,5 @@
-﻿ using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NotikaIdentityEmail.Context;
@@ -6,6 +7,7 @@ using NotikaIdentityEmail.Entities;
 
 namespace NotikaIdentityEmail.Controllers
 {
+    [Authorize(Roles = "User")]
     public class CommentController : Controller
     {
         private readonly EmailContext _context;
@@ -15,15 +17,23 @@ namespace NotikaIdentityEmail.Controllers
             _context = context;
             _userManager = userManager;
         }
-        public IActionResult UserComments()
+        public async Task<IActionResult> UserComments()
         {
-            var values = _context.Comments.Include(x => x.AppUser).ToList();
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            var values = await _context.Comments
+                .Include(x => x.AppUser)
+                .Where(x => x.AppUserId == user.Id)
+                .ToListAsync();
             return View(values);
         }
 
-        public IActionResult UserCommentList()
+        public async Task<IActionResult> UserCommentList()
         {
-            var values = _context.Comments.Include(x => x.AppUser).ToList();
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            var values = await _context.Comments
+                .Include(x => x.AppUser)
+                .Where(x => x.AppUserId == user.Id)
+                .ToListAsync();
             return View(values);
         }
 

@@ -3,7 +3,14 @@
         <div class="row">
             <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
                 <div class="logo-area">
-                     <a href="/Message/Inbox/"><img src="/notika-master/notika/green-horizotal/img/logo/logo.png" alt="" /></a>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-area="Admin" asp-controller="Role" asp-action="RoleList"><img src="/notika-master/notika/green-horizotal/img/logo/logo.png" alt="" /></a>
+                    }
+                    else
+                    {
+                        <a asp-area="" asp-controller="Message" asp-action="Inbox"><img src="/notika-master/notika/green-horizotal/img/logo/logo.png" alt="" /></a>
+                    }
                 </div>
             </div>
             <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
@@ -19,19 +26,27 @@
                             </div>
                         </li>
 
-                        @await Component.InvokeAsync("_MessageListOnNavbar")
+                        @if (User.IsInRole("User"))
+                        {
+                            @await Component.InvokeAsync("_MessageListOnNavbar")
 
-                        <li class="nav-item nc-al">
-                            <a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><span><i class="notika-icon notika-alarm"></i></span><div class="spinner4 spinner-4"></div><div class="ntd-ctn"><span>@ViewBag.userEmailCount</span></div></a>
+                            <li class="nav-item nc-al">
+                                <a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><span><i class="notika-icon notika-alarm"></i></span><div class="spinner4 spinner-4"></div><div class="ntd-ctn"><span>@ViewBag.userEmailCount</span></div></a>
 
-                            @await Component.InvokeAsync("_NotificationListOnNavbar")
+                                @await Component.InvokeAsync("_NotificationListOnNavbar")
+                            </li>
+                            <li class="nav-item">
+                                <a asp-area="" asp-controller="Message" asp-action="Inbox" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><span><i class="notika-icon notika-menus"></i></span><div class="spinner4 spinner-4"></div><div class="ntd-ctn"><span>@ViewBag.notificationCount</span></div></a>
+                            </li>
+                        }
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a asp-area="Admin" asp-controller="Role" asp-action="UserList" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><span><i class="notika-icon notika-windows"></i></span><div class="ntd-ctn"><span>Admin</span></div></a>
+                            </li>
+                        }
 
-
-                        </li>
-                        <li class="nav-item">
-                            <a href="/Message/Inbox/" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><span><i class="notika-icon notika-menus"></i></span><div class="spinner4 spinner-4"></div><div class="ntd-ctn"><span>@ViewBag.notificationCount</span></div></a>
-
-                        </li>
+                       
 
                     </ul>
                 </div>

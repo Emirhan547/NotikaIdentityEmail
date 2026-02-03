@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NotikaIdentityEmail.Entities;
 using NotikaIdentityEmail.Models;
 
-namespace NotikaIdentityEmail.Controllers
+namespace NotikaIdentityEmail.Areas.Admin.Controllers
 {
     public class RoleController : Controller
     {

@@ -1,9 +1,10 @@
-﻿@model CreateRoleViewModel
+﻿@model UpdateRoleViewModel
 
 @{
-    ViewData["Title"] = "CreateRole";
-    Layout = "~/Views/UserLayout/Index.cshtml";
+    ViewData["Title"] = "UpdateRole";
+
 }
+
 
 <div class="form-element-area">
     <div class="container">
@@ -11,12 +12,12 @@
             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                 <div class="form-element-list">
                     <div class="basic-tb-hd">
-                        <h2>Rol Oluşturma Sayfası</h2>
-                        <p>Oluşturmak istediğiniz rol adını aşağıdaki kutucuğa girebilirsiniz.</p>
+                        <h2>Rol Düzenleme Sayfası</h2>
+                        <p>Düzenlemek istediğiniz bilgileri aşağıdaki kutucuğa girebilirsiniz.</p>
                     </div>
                     <form method="post">
                         <div class="row">
-
+                            <input type="hidden" asp-for="RoleId" />
 
                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                 <div class="form-group">
@@ -29,7 +30,7 @@
                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                 <div class="form-group">
                                     <div class="nk-int-st">
-                                        <button class="btn btn-primary">Rolü Oluştur</button>
+                                        <button class="btn btn-success">Rolü Güncelle</button>
                                     </div>
                                 </div>
                             </div>
@@ -43,4 +44,5 @@
         </div>
     </div>
 </div>
+
 

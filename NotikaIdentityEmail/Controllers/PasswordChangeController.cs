@@ -1,5 +1,6 @@
 ﻿
 using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MimeKit;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 
 namespace NotikaIdentityEmail.Controllers
 {
+    [Authorize(Roles = "User")]
     public class PasswordChangeController : Controller
     {
         private readonly UserManager<AppUser> _userManager;

@@ -67,8 +67,14 @@
             <i class="notika-icon notika-close"></i>
             <h2>Oooppsss! <span class="counter">403</span></h2>
             <p>Bu sayfaya maalesef erişim yetkiniz yok. Lütfen rollerinizi denetleyin!</p>
-            <a href="/Message/Inbox/" class="btn">Ana Sayfa</a>
-            <a href="/Role/RoleList/" class="btn error-btn-mg">Rol Listesi</a>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-area="Admin" asp-controller="Role" asp-action="RoleList" class="btn error-btn-mg">Rol Listesi</a>
+            }
+            else
+            {
+                <a asp-area="" asp-controller="Message" asp-action="Inbox" class="btn">Ana Sayfa</a>
+            }
         </div>
     </div>
     <!-- 404 Page area End-->

@@ -1,9 +1,9 @@
-﻿@using Microsoft.AspNetCore.Identity
-@model List<IdentityRole>
+﻿@using NotikaIdentityEmail.Entities
+@model List<AppUser>
 
 @{
-    ViewData["Title"] = "RoleList";
-    Layout = "~/Views/UserLayout/Index.cshtml";
+    ViewData["Title"] = "UserList";
+  
     int count = 0;
 }
 
@@ -13,33 +13,35 @@
             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                 <div class="form-element-list">
                     <div class="basic-tb-hd">
-                        <h2>Rol Listesi</h2>
+                        <h2>Kullanıcı Listesi</h2>
                     </div>
                     <div class="row">
 
                         <table class="table table-bordered">
                             <tr>
                                 <th>#</th>
-                                <th>Rol Adı</th>
-                                <th>Rol Sil</th>
-                                <th>Rol Güncelle</th>
+                                <th>Ad Soyad</th>
+                                <th>Kullanıcı Adı</th>
+                                <th>Kullanıcı Email</th>
+                                <th>Rol Ata</th>
                             </tr>
                             @foreach (var item in Model)
                             {
                                 count++;
                                 <tr>
                                     <td>@count</td>
-                                    <td>@item.Name</td>
-                                    <td><a href="/Role/DeleteRole/@item.Id/" class="btn btn-danger">Sil</a></td>
-                                    <td><a href="/Role/UpdateRole/@item.Id/" class="btn btn-success">Güncelle</a></td>
+                                    <td>@item.Name @item.Surname</td>
+                                    <td>@item.UserName</td>
+                                    <td>@item.Email</td>
+                                    <td><a asp-area="Admin" asp-controller="Role" asp-action="AssignRole" asp-route-id="@item.Id" class="btn btn-warning">Rol Ata</a></td>
                                 </tr>
                             }
                         </table>
-                        <a href="/Role/CreateRole/" class="btn btn-primary">Yeni Rol Girişi</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 

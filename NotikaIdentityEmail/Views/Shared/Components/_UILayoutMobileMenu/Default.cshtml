@@ -5,21 +5,37 @@
                 <div class="mobile-menu">
                     <nav id="dropdown">
                         <ul class="mobile-menu-nav">
-                            <li>
-                                <a data-toggle="collapse" data-target="#Charts" href="#">Mesajlar</a>
-                                <ul class="collapse dropdown-header-top">
-                                    <li><a href="index.html">Gelen Kutusu</a></li>
-                                    <li><a href="index-2.html">Giden Kutusu</a></li>
-                                    <li><a href="index-3.html">Yeni Mesaj Oluştur</a></li>
-                                </ul>
-                            </li>
-                            <li>
-                                <a data-toggle="collapse" data-target="#demoevent" href="#">Profil</a>
-                                <ul id="demoevent" class="collapse dropdown-header-top">
-                                    <li><a href="inbox.html">Bilgileri Güncelle</a></li>
-                                    <li><a href="view-email.html">Şifre Değiştir</a></li>
-                                </ul>
-                            </li>
+                            @if (User.IsInRole("User"))
+                            {
+                                <li>
+                                    <a data-toggle="collapse" data-target="#MobileMailbox" href="#">Mesajlar</a>
+                                    <ul id="MobileMailbox" class="collapse dropdown-header-top">
+                                        <li><a asp-area="" asp-controller="Message" asp-action="Inbox">Gelen Kutusu</a></li>
+                                        <li><a asp-area="" asp-controller="Message" asp-action="Sendbox">Giden Kutusu</a></li>
+                                        <li><a asp-area="" asp-controller="Message" asp-action="Draft">Taslaklar</a></li>
+                                        <li><a asp-area="" asp-controller="Message" asp-action="Trash">Silinenler</a></li>
+                                        <li><a asp-area="" asp-controller="Message" asp-action="ComposeMessage">Yeni Mesaj Oluştur</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a data-toggle="collapse" data-target="#MobileProfile" href="#">Profil</a>
+                                    <ul id="MobileProfile" class="collapse dropdown-header-top">
+                                        <li><a asp-area="" asp-controller="Profile" asp-action="EditProfile">Bilgileri Güncelle</a></li>
+                                        <li><a asp-area="" asp-controller="PasswordChange" asp-action="ForgetPassword">Şifre Sıfırla</a></li>
+                                    </ul>
+                                </li>
+                            }
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li>
+                                    <a data-toggle="collapse" data-target="#MobileAdmin" href="#">Yönetim</a>
+                                    <ul id="MobileAdmin" class="collapse dropdown-header-top">
+                                        <li><a asp-area="Admin" asp-controller="Role" asp-action="UserList">Kullanıcı Listesi</a></li>
+                                        <li><a asp-area="Admin" asp-controller="Role" asp-action="RoleList">Rol Listesi</a></li>
+                                        <li><a asp-area="Admin" asp-controller="Role" asp-action="CreateRole">Yeni Rol</a></li>
+                                    </ul>
+                                </li>
+                            }
                         </ul>
                     </nav>
                 </div>

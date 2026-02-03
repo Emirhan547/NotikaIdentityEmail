@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NotikaIdentityEmail.Entities;
 
 namespace NotikaIdentityEmail.Controllers
 {
+    [AllowAnonymous]
     public class ActivationController : Controller
     {
         private readonly UserManager<AppUser> _userManager;
@@ -12,7 +14,10 @@ namespace NotikaIdentityEmail.Controllers
         {
             _userManager = userManager;
         }
-
+        public IActionResult Index ()
+        {
+            return View();
+        }
         [HttpGet]
         public IActionResult UserActivation()
         {

@@ -1,4 +1,5 @@
-﻿ using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NotikaIdentityEmail.Context;
 using NotikaIdentityEmail.Entities;
@@ -6,6 +7,7 @@ using NotikaIdentityEmail.Models;
 
 namespace NotikaIdentityEmail.Controllers
 {
+    [AllowAnonymous]
     public class LoginController : Controller
     {
 

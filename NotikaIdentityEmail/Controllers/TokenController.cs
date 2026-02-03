@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NotikaIdentityEmail.Models;
@@ -8,6 +9,7 @@ using System.Text;
 
 namespace NotikaIdentityEmail.Controllers
 {
+    [Authorize(Roles = "User")]
     public class TokenController : Controller
     {
         private readonly JwtSettingsModel _jwtSettingsModel;
