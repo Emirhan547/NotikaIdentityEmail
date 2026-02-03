@@ -1,5 +1,5 @@
-﻿@using NotikaIdentityEmail.Entities
-@model Message
+﻿@model ComposeMessageViewModel
+
 @{
     ViewData["Title"] = "ComposeMessage";
     Layout = "~/Views/UserLayout/Index.cshtml";
@@ -12,12 +12,16 @@
             @await Component.InvokeAsync("_MessageSidebar")
 
             <form method="post">
+                @Html.AntiForgeryToken()
                 <div class="col-lg-9 col-md-9 col-sm-8 col-xs-12">
                     <div class="view-mail-list sm-res-mg-t-30">
                         <div class="view-mail-hd">
                             <div class="view-mail-hrd">
                                 <h2>Yeni Mesaj Oluşturun</h2>
                             </div>
+                        </div>
+                        <div class="text-danger">
+                            @Html.ValidationSummary()
                         </div>
                         <div class="cmp-int mg-t-20">
                             <div class="row">
@@ -31,6 +35,7 @@
                                         <div class="nk-int-st cmp-int-in cmp-email-over">
                                             <input type="email" class="form-control" asp-for="ReceiverEmail" placeholder="test@email.com" />
                                         </div>
+                                        <span class="text-danger" asp-validation-for="ReceiverEmail"></span>
                                     </div>
                                 </div>
                             </div>
@@ -47,6 +52,7 @@
                                                 <option value=""> -- Kategori Seçiniz --</option>
                                             </select>
                                         </div>
+                                        <span class="text-danger" asp-validation-for="CategoryId"></span>
                                     </div>
                                 </div>
                             </div>
@@ -61,6 +67,7 @@
                                         <div class="nk-int-st cmp-int-in cmp-email-over">
                                             <input type="text" class="form-control" asp-for="Subject" />
                                         </div>
+                                        <span class="text-danger" asp-validation-for="Subject"></span>
                                     </div>
                                 </div>
                             </div>
@@ -69,16 +76,16 @@
                             <div class="form-group">
                                 <textarea asp-for="MessageDetail" placeholder="Mesajınızı buraya yazabilirsiniz..." class="form-control summernote"></textarea>
                             </div>
+                            <span class="text-danger" asp-validation-for="MessageDetail"></span>
                         </div>
 
-                        <button class="btn btn-info">Mesajı Gönder</button>
+                        <button class="btn btn-info" name="action" value="send">Mesajı Gönder</button>
+                        <button class="btn btn-default" name="action" value="draft">Taslak Olarak Kaydet</button>
 
                         <div class="vw-ml-action-ls text-right mg-t-20">
                             <div class="btn-group ib-btn-gp active-hook nk-email-inbox">
-                                <button class="btn btn-default btn-sm waves-effect"><i class="notika-icon notika-next"></i> Yanıtla</button>
-                                <button class="btn btn-default btn-sm waves-effect"><i class="notika-icon notika-right-arrow"></i> Yönlendir</button>
-                                <button class="btn btn-default btn-sm waves-effect"><i class="notika-icon notika-print"></i> Yazdır</button>
-                                <button class="btn btn-default btn-sm waves-effect"><i class="notika-icon notika-trash"></i> Sil</button>
+                                <a class="btn btn-default btn-sm waves-effect" href="/Message/Inbox/"><i class="notika-icon notika-left-arrow"></i> Gelen Kutusu</a>
+                                <a class="btn btn-default btn-sm waves-effect" href="/Message/Sendbox/"><i class="notika-icon notika-right-arrow"></i> Giden Kutusu</a>
                             </div>
                         </div>
                     </div>

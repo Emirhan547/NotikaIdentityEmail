@@ -5,10 +5,10 @@
         </div>
         <div class="inbox-status">
             <ul class="inbox-st-nav inbox-ft">
-                <li><a href="/Message/Inbox/"><i class="notika-icon notika-mail"></i> Gelen Kutusu<span class="pull-right">@ViewBag.receiveMessageCount</span></a></li>
+                <li><a href="/Message/Inbox/"><i class="notika-icon notika-mail"></i> Gelen Kutusu<span class="pull-right">@ViewBag.unreadMessageCount/@ViewBag.receiveMessageCount</span></a></li>
                 <li><a href="/Message/Sendbox/"><i class="notika-icon notika-sent"></i> Giden Kutusu<span class="pull-right">@ViewBag.sendMessageCount</span></a></li>
-                <li><a href="/Message/Draft/"><i class="notika-icon notika-draft"></i> Taslaklar<span class="pull-right">0</span></a></li>
-                <li><a href="/Message/Trash/"><i class="notika-icon notika-trash"></i> Silinenler<span class="pull-right">0</span></a></li>
+                <li><a href="/Message/Draft/"><i class="notika-icon notika-draft"></i> Taslaklar<span class="pull-right">@ViewBag.draftMessageCount</span></a></li>
+                <li><a href="/Message/Trash/"><i class="notika-icon notika-trash"></i> Silinenler<span class="pull-right">@ViewBag.trashMessageCount</span></a></li>
             </ul>
         </div>
         <hr>

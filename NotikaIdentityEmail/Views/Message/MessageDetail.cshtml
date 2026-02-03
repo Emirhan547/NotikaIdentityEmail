@@ -47,7 +47,7 @@
                         <div class="view-ml-rl">
                             <p>@Model.SendDate.ToString("HH:mm") (<span style="color:#6c757d">@timeAgoText</span>)</p>
                         </div>
-                    </div>
+                    </div>a
                     <div class="mail-ads mail-vw-ph">
                         <p class="first-ph"><b>Konu: </b>@Model.Subject</p>
                         <p><b>Gönderici:</b> <a href="#">@Model.SenderEmail</a></p>
@@ -59,10 +59,9 @@
 
                     <div class="vw-ml-action-ls text-right mg-t-20">
                         <div class="btn-group ib-btn-gp active-hook nk-email-inbox">
-                            <button class="btn btn-default btn-sm waves-effect"><i class="notika-icon notika-next"></i> Yanıtla</button>
-                            <button class="btn btn-default btn-sm waves-effect"><i class="notika-icon notika-right-arrow"></i> Yönlendir</button>
-                            <button class="btn btn-default btn-sm waves-effect"><i class="notika-icon notika-print"></i> Yazdır</button>
-                            <button class="btn btn-default btn-sm waves-effect"><i class="notika-icon notika-trash"></i> Sil</button>
+                            <a class="btn btn-default btn-sm waves-effect" href="/Message/Reply/@Model.MessageId"><i class="notika-icon notika-next"></i> Yanıtla</a>
+                            <a class="btn btn-default btn-sm waves-effect" href="/Message/Forward/@Model.MessageId"><i class="notika-icon notika-right-arrow"></i> Yönlendir</a>
+                            <a class="btn btn-default btn-sm waves-effect" href="/Message/MoveToTrash/@Model.MessageId?returnAction=Inbox"><i class="notika-icon notika-trash"></i> Sil</a>
                         </div>
                     </div>
                 </div>

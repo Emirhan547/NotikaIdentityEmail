@@ -1,7 +1,7 @@
 ﻿@model List<MessageWithReceiverInfoViewModel>
 
 @{
-    ViewData["Title"] = "Inbox";
+    ViewData["Title"] = "Sendbox";
     Layout = "~/Views/UserLayout/Index.cshtml";
 }
 
@@ -13,12 +13,12 @@
 
             <div class="col-lg-9 col-md-9 col-sm-9 col-xs-12">
                 <div class="inbox-text-list sm-res-mg-t-30">
-                    <div class="form-group">
+                    <form method="get" class="form-group">
                         <div class="nk-int-st search-input search-overt">
-                            <input type="text" class="form-control" placeholder="Aranacak kelimeleri giriniz..." />
-                            <button class="btn search-ib">Ara</button>
+                            <input type="text" class="form-control" name="query" value="@Context.Request.Query["query"]" placeholder="Aranacak kelimeleri giriniz..." />
+                            <button class="btn search-ib" type="submit">Ara</button>
                         </div>
-                    </div>
+                    </form>
                     <div class="inbox-btn-st-ls btn-toolbar">
                         <div class="btn-group ib-btn-gp active-hook nk-email-inbox">
                             <button class="btn btn-default btn-sm"><i class="notika-icon notika-refresh"></i> Yenile</button>
@@ -49,8 +49,8 @@
                                 {
                                     <tr>
                                         <td class=""><label><input type="checkbox" class="i-checks"></label></td>
-                                        <th><a href="#">@item.ReceiverName @item.ReceiverSurname </a> </th>
-                                        <td><a href="#">@item.Subject </a> </td>
+                                        <th><a href="/Message/MessageDetail/@item.MessageId/">@item.ReceiverName @item.ReceiverSurname </a> </th>
+                                        <td><a href="/Message/MessageDetail/@item.MessageId/">@item.Subject </a> </td>
                                         @{
                                             if (item.CategoryName == "Eğitim")
                                             {

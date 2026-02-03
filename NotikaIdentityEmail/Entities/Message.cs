@@ -8,6 +8,9 @@
         public string Subject { get; set; }
         public string MessageDetail { get; set; }
         public bool IsRead { get; set; }
+        public bool IsDraft { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime? DeletedAt { get; set; }
         public DateTime SendDate { get; set; }
         public int CategoryId { get; set; }
         public Category Category { get; set; }

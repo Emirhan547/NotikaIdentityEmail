@@ -26,7 +26,7 @@ builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddScoped<IEmailService, EmailService>();
-
+builder.Services.AddSingleton<IHtmlSanitizerService, HtmlSanitizerService>();
 // Cookie + JWT birlikte authentication
 builder.Services.AddAuthentication(options =>
 {
