@@ -1,19 +1,22 @@
-﻿using MailKit.Net.Smtp;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using MimeKit;
 using NotikaIdentityEmail.Entities;
 using NotikaIdentityEmail.Models;
+using NotikaIdentityEmail.Services;
 
 namespace NotikaIdentityEmail.Controllers
 {
     public class RegisterController : Controller
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly IEmailService _emailService;
 
-        public RegisterController(UserManager<AppUser> userManager)
+        public RegisterController(
+            UserManager<AppUser> userManager,
+            IEmailService emailService)
         {
             _userManager = userManager;
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -21,60 +24,43 @@ namespace NotikaIdentityEmail.Controllers
         {
             return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> CreateUser(RegisterViewModel model)
         {
-            Random rnd = new Random();
-            int code = rnd.Next(100000, 1000000);
-            AppUser appUser = new AppUser()
+            if (!ModelState.IsValid)
+                return View(model);
+
+            int code = Random.Shared.Next(100000, 999999);
+
+            var appUser = new AppUser
             {
                 Name = model.Name,
-                Email = model.Email,
                 Surname = model.Surname,
+                Email = model.Email,
                 UserName = model.Username,
-                ActivationCode = code
+                ActivationCode = code,
+                EmailConfirmed = false
             };
 
             var result = await _userManager.CreateAsync(appUser, model.Password);
 
             if (result.Succeeded)
             {
-                //Buraya mail kodları gelecek 
+                await _emailService.SendAsync(
+                    model.Email,
+                    "Notika Identity Aktivasyon Kodu",
+                    $"Hesabınızı doğrulamak için kodunuz: {code}"
+                );
 
-                MimeMessage mimeMessage = new MimeMessage();
-
-                MailboxAddress mailboxAddressFrom = new MailboxAddress("Admin", "emirhanhacioglu909@gmail.com");
-                mimeMessage.From.Add(mailboxAddressFrom);
-
-                MailboxAddress mailboxAddressTo = new MailboxAddress("User", model.Email);
-                mimeMessage.To.Add(mailboxAddressTo);
-
-                var bodyBuilder = new BodyBuilder();
-                bodyBuilder.TextBody = "Hesabınızı doğrulamak için gerekli olan aktivasyon kodu: " + code;
-                mimeMessage.Body = bodyBuilder.ToMessageBody();
-
-                mimeMessage.Subject = "Notika Identity Aktivasyon Kodu";
-
-                SmtpClient client = new SmtpClient();
-                client.Connect("smtp.gmail.com", 587, false);
-                client.Authenticate("emirhanhacioglu909@gmail.com", "zedhniyorxuqovzp");
-                client.Send(mimeMessage);
-                client.Disconnect(true);
-                TempData["EmailMove"] = model.Email;
-
+                TempData["Email"] = model.Email;
                 return RedirectToAction("UserActivation", "Activation");
             }
-            else
-            {
-                foreach (var item in result.Errors)
-                {
-                    ModelState.AddModelError("", item.Description);
-                }
-            }
 
-            return View();
+            foreach (var error in result.Errors)
+                ModelState.AddModelError("", error.Description);
+
+            return View(model);
         }
-
     }
 }
-//zedh niyo rxuq ovzp

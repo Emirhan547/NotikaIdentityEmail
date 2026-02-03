@@ -3,11 +3,11 @@ using NotikaIdentityEmail.Context;
 
 namespace NotikaIdentityEmail.ViewComponents.NavbarHeaderViewComponents
 {
-    public class _NotificationListOnbarNavbarViewComponent:ViewComponent
+    public class _NotificationListOnNavbarViewComponent:ViewComponent
     {
         private readonly EmailContext _emailContext;
 
-        public _NotificationListOnbarNavbarViewComponent(EmailContext emailContext)
+        public _NotificationListOnNavbarViewComponent(EmailContext emailContext)
         {
             _emailContext = emailContext;
         }

@@ -5,11 +5,11 @@ using NotikaIdentityEmail.Entities;
 
 namespace NotikaIdentityEmail.ViewComponents
 {
-    public class _HeaderUserLayoutComponentPartial : ViewComponent
+    public class _UILayoutHeaderViewComponent : ViewComponent
     {
         private readonly EmailContext _context;
         private readonly UserManager<AppUser> _userManager;
-        public _HeaderUserLayoutComponentPartial(EmailContext context, UserManager<AppUser> userManager)
+        public _UILayoutHeaderViewComponent(EmailContext context, UserManager<AppUser> userManager)
         {
             _context = context;
             _userManager = userManager;

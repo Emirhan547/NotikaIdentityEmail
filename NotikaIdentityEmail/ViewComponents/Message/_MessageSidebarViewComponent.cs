@@ -17,7 +17,7 @@ namespace NotikaIdentityEmail.ViewComponents.Message
             _userManager = userManager;
         }
 
-        public async Task<IViewComponentResult> Invoke ()
+        public async Task<IViewComponentResult> InvokeAsync ()
         {
             var user = await _userManager.FindByNameAsync(User.Identity.Name);
             ViewBag.sendMessageCount = _emailContext.Messages.Where(x => x.SenderEmail == user.Email).Count();

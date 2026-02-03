@@ -2,7 +2,7 @@
 
 namespace NotikaIdentityEmail.ViewComponents
 {
-    public class _HeadUserLayoutComponentPartial : ViewComponent
+    public class _UILayoutHeadViewComponent : ViewComponent
     {
         public IViewComponentResult Invoke()
         {
