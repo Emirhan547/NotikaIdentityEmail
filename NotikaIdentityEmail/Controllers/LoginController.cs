@@ -10,12 +10,13 @@ namespace NotikaIdentityEmail.Controllers
     [AllowAnonymous]
     public class LoginController : Controller
     {
-
+        private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly EmailContext _emailContext;
-        public LoginController(SignInManager<AppUser> signInManager, EmailContext emailContext)
+        public LoginController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager, EmailContext emailContext)
         {
             _signInManager = signInManager;
+            _userManager = userManager;
             _emailContext = emailContext;
         }
 
@@ -41,7 +42,12 @@ namespace NotikaIdentityEmail.Controllers
                 var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, true, false);
                 if (result.Succeeded)
                 {
-                    return RedirectToAction("EditProfile", "Profile");
+                var roles = await _userManager.GetRolesAsync(value);
+                if (roles.Contains("Admin"))
+                {
+                    return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+                }
+                return RedirectToAction("EditProfile", "Profile");
                 }
             ModelState.AddModelError(string.Empty, "Kullanıcı Adı veya Şifre Yanlış");
                 return View(model);

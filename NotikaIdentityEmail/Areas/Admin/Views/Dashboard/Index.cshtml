@@ -1,0 +1,146 @@
+﻿@using NotikaIdentityEmail.Areas.Admin.Models
+@model DashboardViewModel
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="analysis-area">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="analysis-progrebar-ctn">
+                    <h4>Toplam Kullanıcı</h4>
+                    <h2>@Model.UserCount</h2>
+                    <p>Son 24 saat aktif girişler.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="analysis-progrebar-ctn">
+                    <h4>Toplam Mesaj</h4>
+                    <h2>@Model.MessageCount</h2>
+                    <p>@Model.UnreadMessageCount okunmamış mesaj.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="analysis-progrebar-ctn">
+                    <h4>Aktif Kategori</h4>
+                    <h2>@Model.CategoryCount</h2>
+                    <p>@Model.CommentCount yorum bekliyor.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="analysis-progrebar-ctn">
+                    <h4>Bildirimler</h4>
+                    <h2>@Model.NotificationCount</h2>
+                    <p>@Model.DraftCount taslak, @Model.TrashCount çöp.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="data-table-area">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-7 col-md-7 col-sm-12 col-xs-12">
+                <div class="data-table-list">
+                    <div class="basic-tb-hd">
+                        <h2>Son Mesajlar</h2>
+                        <p>En güncel mesaj akışı ve okunma durumu.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Gönderen</th>
+                                    <th>Konu</th>
+                                    <th>Kategori</th>
+                                    <th>Tarih</th>
+                                    <th>Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var message in Model.RecentMessages)
+                                {
+                                    <tr>
+                                        <td>@message.SenderEmail</td>
+                                        <td>@message.Subject</td>
+                                        <td>@message.CategoryName</td>
+                                        <td>@message.SendDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td>
+                                            @if (message.IsRead)
+                                            {
+                                                <span class="label label-success">Okundu</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="label label-warning">Okunmadı</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
+                <div class="data-table-list">
+                    <div class="basic-tb-hd">
+                        <h2>En Yoğun Kategoriler</h2>
+                        <p>Mesaj trafiği yüksek kategoriler.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Kategori</th>
+                                    <th>Mesaj</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var stat in Model.CategoryStats)
+                                {
+                                    <tr>
+                                        <td>@stat.CategoryName</td>
+                                        <td>@stat.MessageCount</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="widget-btn-list">
+                        <a asp-area="Admin" asp-controller="Category" asp-action="Index" class="btn btn-success notika-btn-success">Kategori Yönetimi</a>
+                        <a asp-area="Admin" asp-controller="Role" asp-action="UserList" class="btn btn-info notika-btn-info">Kullanıcılar</a>
+                    </div>
+                </div>
+
+                <div class="data-table-list mg-t-30">
+                    <div class="basic-tb-hd">
+                        <h2>Gözlemlenebilirlik Durumu</h2>
+                        <p>ElasticSearch, Kibana ve Serilog entegrasyon görünümü.</p>
+                    </div>
+                    <ul class="notika-list">
+                        <li>
+                            <i class="notika-icon notika-bar-chart"></i>
+                            ElasticSearch: @(Model.ElasticsearchEnabled ? "Bağlı" : "Yapılandırılmadı")
+                        </li>
+                        <li>
+                            <i class="notika-icon notika-map"></i>
+                            Kibana: @(Model.KibanaEnabled ? "Hazır" : "Yapılandırılmadı")
+                        </li>
+                        <li>
+                            <i class="notika-icon notika-edit"></i>
+                            Serilog Minimum Level: @Model.SerilogMinimumLevel
+                        </li>
+                    </ul>
+                    <div class="alert alert-info mg-t-15">
+                        ElasticSearch: <strong>@(Model.ElasticsearchUrl ?? "URL tanımlı değil")</strong><br />
+                        Kibana: <strong>@(Model.KibanaUrl ?? "URL tanımlı değil")</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

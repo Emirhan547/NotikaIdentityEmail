@@ -1,0 +1,59 @@
+﻿@model IEnumerable<NotikaIdentityEmail.Entities.Category>
+@{
+    ViewData["Title"] = "Kategori Yönetimi";
+}
+
+<div class="data-table-area">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="data-table-list">
+                    <div class="basic-tb-hd">
+                        <h2>Kategori Listesi</h2>
+                        <p>Admin alanında kategorileri düzenleyin, aktif/pasif yönetimini yapın.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Ad</th>
+                                    <th>Icon</th>
+                                    <th>Durum</th>
+                                    <th class="text-right">İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var category in Model)
+                                {
+                                    <tr>
+                                        <td>@category.CategoryName</td>
+                                        <td>@category.CategoryIconUrl</td>
+                                        <td>
+                                            @if (category.CategoryStatus)
+                                            {
+                                                <span class="label label-success">Aktif</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="label label-default">Pasif</span>
+                                            }
+                                        </td>
+                                        <td class="text-right">
+                                            <a asp-area="Admin" asp-controller="Category" asp-action="Edit" asp-route-id="@category.CategoryId" class="btn btn-sm btn-warning">Düzenle</a>
+                                            <form asp-area="Admin" asp-controller="Category" asp-action="Delete" asp-route-id="@category.CategoryId" method="post" style="display:inline;">
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Kategori silinsin mi?');">Sil</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="widget-btn-list">
+                        <a asp-area="Admin" asp-controller="Category" asp-action="Create" class="btn btn-success notika-btn-success">Yeni Kategori</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

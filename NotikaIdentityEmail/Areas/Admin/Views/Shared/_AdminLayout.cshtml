@@ -1,0 +1,119 @@
+﻿<!doctype html>
+<html class="no-js" lang="tr">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>@ViewData["Title"] - Notika Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/x-icon" href="~/notika-master/notika/green-horizotal/img/favicon.ico">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,700,900" rel="stylesheet">
+    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/css/font-awesome.min.css">
+    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/css/animate.css">
+    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/css/normalize.css">
+    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/css/notika-custom-icon.css">
+    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/css/main.css">
+    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/style.css">
+    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/css/responsive.css">
+</head>
+<body>
+    <div class="header-top-area">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                    <div class="logo-area">
+                        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                            <img src="~/notika-master/notika/green-horizotal/img/logo/logo.png" alt="Notika Admin">
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
+                    <div class="header-top-menu">
+                        <ul class="nav navbar-nav notika-top-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                                    <i class="notika-icon notika-house"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Admin" asp-controller="Category" asp-action="Index">
+                                    <i class="notika-icon notika-edit"></i> Kategoriler
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Admin" asp-controller="Role" asp-action="RoleList">
+                                    <i class="notika-icon notika-menus"></i> Roller
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Admin" asp-controller="Role" asp-action="UserList">
+                                    <i class="notika-icon notika-support"></i> Kullanıcılar
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Profile" asp-action="EditProfile">
+                                    <i class="notika-icon notika-user"></i> Profile
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <span class="nav-link text-muted">Hoş geldin, @User.Identity?.Name</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="breadcomb-area">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="breadcomb-list">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <div class="breadcomb-wp">
+                                    <div class="breadcomb-icon">
+                                        <i class="notika-icon notika-house"></i>
+                                    </div>
+                                    <div class="breadcomb-ctn">
+                                        <h2>@ViewData["Title"]</h2>
+                                        <p>Admin alanında güncel içeriklere hızlı erişim.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <div class="breadcomb-report">
+                                    <a asp-area="Admin" asp-controller="Category" asp-action="Create" class="btn">
+                                        <i class="notika-icon notika-plus-symbol"></i> Yeni Kategori
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @RenderBody()
+
+    <div class="footer-copyright-area">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="footer-copy-right">
+                        <p>Notika Admin Dashboard • @DateTime.Now.Year</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/notika-master/notika/green-horizotal/js/vendor/jquery-1.12.4.min.js"></script>
+    <script src="~/notika-master/notika/green-horizotal/js/bootstrap.min.js"></script>
+    <script src="~/notika-master/notika/green-horizotal/js/wow.min.js"></script>
+    <script src="~/notika-master/notika/green-horizotal/js/main.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

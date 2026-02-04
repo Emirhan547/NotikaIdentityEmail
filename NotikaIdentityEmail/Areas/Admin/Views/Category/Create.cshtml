@@ -1,0 +1,45 @@
+﻿@using NotikaIdentityEmail.Areas.Admin.Models
+@model CategoryFormViewModel
+@{
+    ViewData["Title"] = "Yeni Kategori";
+}
+
+<div class="form-element-area">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-md-10 col-sm-12 col-xs-12">
+                <div class="form-element-list">
+                    <div class="basic-tb-hd">
+                        <h2>Kategori Oluştur</h2>
+                        <p>Yeni kategori için temel bilgileri girin.</p>
+                    </div>
+                    <form asp-area="Admin" asp-controller="Category" asp-action="Create" method="post">
+                        <div class="form-group">
+                            <label asp-for="CategoryName"></label>
+                            <input asp-for="CategoryName" class="form-control" placeholder="Kategori adı">
+                            <span asp-validation-for="CategoryName" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="CategoryIconUrl"></label>
+                            <input asp-for="CategoryIconUrl" class="form-control" placeholder="Icon URL">
+                            <span asp-validation-for="CategoryIconUrl" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input asp-for="CategoryStatus" type="checkbox"> Aktif
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success notika-btn-success">Kaydet</button>
+                            <a asp-area="Admin" asp-controller="Category" asp-action="Index" class="btn btn-default">Vazgeç</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

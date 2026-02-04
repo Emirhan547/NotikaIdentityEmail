@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NotikaIdentityEmail.Entities;
@@ -6,6 +7,8 @@ using NotikaIdentityEmail.Models;
 
 namespace NotikaIdentityEmail.Areas.Admin.Controllers
 {
+    [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class RoleController : Controller
     {
         private readonly RoleManager<IdentityRole> _roleManager;
