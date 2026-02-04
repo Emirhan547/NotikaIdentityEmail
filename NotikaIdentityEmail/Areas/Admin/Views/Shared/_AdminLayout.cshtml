@@ -1,188 +1,231 @@
-﻿<!doctype html>
-<html class="no-js" lang="tr">
+﻿
+﻿
+<!DOCTYPE html>
+<html class="light" lang="tr">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>@ViewData["Title"] - Notika Admin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <link rel="shortcut icon" type="image/x-icon" href="~/notika-master/notika/green-horizotal/img/favicon.ico">
-    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,700,900" rel="stylesheet">
-
-    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/css/bootstrap.min.css">
-    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/css/font-awesome.min.css">
-    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/css/animate.css">
-    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/css/normalize.css">
-    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/css/notika-custom-icon.css">
-    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/css/main.css">
-    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/style.css">
-    <link rel="stylesheet" href="~/notika-master/notika/green-horizotal/css/responsive.css">
-</head>
-<body>
-
-    <div class="header-top-area">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-4">
-                    <div class="logo-area">
-                        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
-                            <img src="~/notika-master/notika/green-horizotal/img/logo/logo.png" alt="Notika Admin">
-                        </a>
-                    </div>
-                </div>
-
-                <div class="col-lg-8">
-                    <div class="header-top-menu">
-                        <ul class="nav navbar-nav notika-top-nav">
-
-                            <!-- 🔥 LOGS + REALTIME ERROR BADGE -->
-                            <li class="nav-item">
-                                <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
-                                    <i class="notika-icon notika-bar-chart"></i>
-                                    Logs
-                                    <span id="adminErrorBadge"
-                                          class="badge badge-danger"
-                                          style="display:none;">0</span>
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a asp-area="Admin" asp-controller="Category" asp-action="Index">
-                                    <i class="notika-icon notika-edit"></i> Kategoriler
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a asp-area="Admin" asp-controller="Role" asp-action="RoleList">
-                                    <i class="notika-icon notika-menus"></i> Roller
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a asp-area="Admin" asp-controller="Role" asp-action="UserList">
-                                    <i class="notika-icon notika-support"></i> Kullanıcılar
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a asp-area="" asp-controller="Profile" asp-action="EditProfile">
-                                    <i class="notika-icon notika-user"></i> Profil
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <span class="nav-link text-muted">
-                                    Hoş geldin, @User.Identity?.Name
-                                </span>
-                            </li>
-
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="breadcomb-area">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="breadcomb-list">
-                        <div class="breadcomb-wp">
-                            <div class="breadcomb-icon">
-                                <i class="notika-icon notika-house"></i>
-                            </div>
-                            <div class="breadcomb-ctn">
-                                <h2>@ViewData["Title"]</h2>
-                                <p>Admin alanında güncel içeriklere hızlı erişim.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    @RenderBody()
-
-    <div class="footer-copyright-area">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="footer-copy-right">
-                        <p>Notika Admin Dashboard • @DateTime.Now.Year</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="~/notika-master/notika/green-horizotal/js/vendor/jquery-1.12.4.min.js"></script>
-    <script src="~/notika-master/notika/green-horizotal/js/bootstrap.min.js"></script>
-    <script src="~/notika-master/notika/green-horizotal/js/wow.min.js"></script>
-    <script src="~/notika-master/notika/green-horizotal/js/main.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.2/signalr.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+  
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>@ViewData["Title"] - Admin</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script>
-        (function () {
-
-            const isAdmin = @User.IsInRole("Admin").ToString().ToLower();
-            if (!isAdmin) return;
-
-            const connection = new signalR.HubConnectionBuilder()
-                .withUrl("/hubs/notification")
-                .withAutomaticReconnect()
-                .build();
-
-            function increaseErrorBadge() {
-                const badge = document.getElementById("adminErrorBadge");
-                if (!badge) return;
-
-                const current = parseInt(badge.textContent || "0", 10) || 0;
-                badge.textContent = (current + 1).toString();
-                badge.style.display = "inline-block";
-            }
-
-            connection.start()
-                .then(() => connection.invoke("JoinUserGroup", "admins"))
-                .catch(err => console.error("SignalR admin error:", err));
-
-            connection.on("NewError", function (data) {
-                increaseErrorBadge();
-
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'error',
-                    title: 'Yeni Sistem Hatası',
-                    text: data.message,
-                    showConfirmButton: false,
-                    timer: 4000
-                });
-            });
-
-            // ✅ YENİ: Real-time error count polling
-            setInterval(async function() {
-                try {
-                    const response = await fetch('/Admin/Dashboard/GetErrorCount');
-                    const data = await response.json();
-
-                    const badge = document.getElementById("adminErrorBadge");
-                    if (badge && data.count > 0) {
-                        badge.textContent = data.count;
-                        badge.style.display = "inline-block";
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#6764f2",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111022",
+                        "sidebar-dark": "#1a192d"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
                     }
-                } catch (error) {
-                    console.error('Error count update failed:', error);
                 }
-            }, 30000); // Her 30 saniyede bir güncelle
-
-        })();
+            }
+        }
     </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
 
-    @RenderSection("Scripts", required: false)
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
 
-</body>
+        .sidebar-item-active {
+            background-color: rgba(103, 100, 242, 0.1);
+            border-left: 4px solid #6764f2;
+        }
+    </style>
+</head>
+
+                        
+                    <body class="bg-[#f9fafb] font-display">
+                        <div class="flex h-screen overflow-hidden">
+                            <aside class="w-[260px] bg-sidebar-dark text-white flex flex-col flex-shrink-0">
+                                <div class="p-6 flex items-center gap-3">
+                                    <div class="bg-primary rounded-lg p-2 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-white">mail</span>
+                                    </div>
+
+                                  
+                                        <div>
+                                            <h1 class="text-lg font-bold leading-none">MailAdmin</h1>
+                                            <p class="text-xs text-gray-400 mt-1">Messaging System</p>
+                                        </div>
+                                    </div>
+                               
+                                                <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+                                                    <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-3 mb-2">Main Menu</div>
+                                                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary border-l-4 border-primary" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                                                        <span class="material-symbols-outlined">dashboard</span>
+                                                        <span class="text-sm font-medium">Dashboard</span>
+                                                    </a>
+                                                    <div>
+                                                        <button class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors" type="button">
+                                                            <div class="flex items-center gap-3">
+                                                                <span class="material-symbols-outlined text-gray-400">email</span>
+                                                                <span class="text-sm font-medium">Messages</span>
+                                                            </div>
+                                                            <span class="material-symbols-outlined text-xs">expand_more</span>
+                                                        </button>
+                                                        <div class="ml-9 mt-1 space-y-1">
+                                                            <a class="block px-3 py-2 text-sm text-gray-400 hover:text-white" href="#">Inbox</a>
+                                                            <a class="block px-3 py-2 text-sm text-gray-400 hover:text-white" href="#">Sent Items</a>
+                                                            <a class="block px-3 py-2 text-sm text-gray-400 hover:text-white" href="#">Categories</a>
+                                                        </div>
+                                                    </div>
+                                    
+                                                        <div>
+                                                            <button class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors" type="button">
+                                                                <div class="flex items-center gap-3">
+                                                                    <span class="material-symbols-outlined text-gray-400">group</span>
+                                                                    <span class="text-sm font-medium">User Management</span>
+                                                                </div>
+                                                                <span class="material-symbols-outlined text-xs">expand_more</span>
+                                                            </button>
+                                                            <div class="ml-9 mt-1 space-y-1">
+                                                                <a class="block px-3 py-2 text-sm text-gray-400 hover:text-white" asp-area="Admin" asp-controller="Role" asp-action="UserList">Kullanıcı Listesi</a>
+                                                                <a class="block px-3 py-2 text-sm text-gray-400 hover:text-white" asp-area="Admin" asp-controller="Role" asp-action="RoleList">Rol Listesi</a>
+                                                                <a class="block px-3 py-2 text-sm text-gray-400 hover:text-white" asp-area="Admin" asp-controller="Role" asp-action="CreateRole">Yeni Rol</a>
+                                                            </div>
+                                                        </div>
+                                                        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors" asp-area="Admin" asp-controller="Category" asp-action="Index">
+                                                            <span class="material-symbols-outlined text-gray-400">list_alt</span>
+                                                            <span class="text-sm font-medium">Kategoriler</span>
+                                                        </a>
+                                                        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                                                            <span class="material-symbols-outlined text-gray-400">insights</span>
+                                                            <span class="text-sm font-medium">Logs</span>
+                                                            <span id="adminErrorBadge" class="ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-semibold text-white" style="display:none;">0</span>
+                                                        </a>
+                                                        <div class="pt-4">
+                                                            <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-3 mb-2">System</div>
+                                                            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors" asp-area="" asp-controller="Profile" asp-action="EditProfile">
+                                                                <span class="material-symbols-outlined text-gray-400">settings</span>
+                                                                <span class="text-sm font-medium">Settings</span>
+                                                            </a>
+                                                            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors" href="#">
+                                                                <span class="material-symbols-outlined text-gray-400">help</span>
+                                                                <span class="text-sm font-medium">Documentation</span>
+                                                            </a>
+                                                        </div>
+                                                        </nav>
+                                                        <div class="p-4 bg-black/20">
+                                                            <div class="flex items-center gap-3 px-2">
+                                                                <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                                                <span class="text-xs text-gray-400">System v2.4.0-stable</span>
+                                                            </div>
+                                                        </div>
+                                                        </aside>
+                                                        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+                                                            <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 flex-shrink-0">
+                                                                <div class="flex items-center gap-8">
+                                                                    <div class="relative w-72">
+                                                                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl">search</span>
+                                                                        <input class="w-full bg-gray-100 border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all" placeholder="Search records, users..." type="text" />
+                                                                    </div>
+                                                                    <nav class="hidden md:flex items-center gap-2 text-sm">
+                                                                        <a class="text-gray-500 hover:text-primary" href="#">Admin</a>
+                                                                        <span class="material-symbols-outlined text-gray-400 text-sm">chevron_right</span>
+                                                                        <span class="text-gray-900 font-medium">@ViewData["Title"]</span>
+                                                                    </nav>
+                                                                </div>
+                                                                <div class="flex items-center gap-4">
+                                                                    <button class="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors" type="button">
+                                                                        <span class="material-symbols-outlined">notifications</span>
+                                                                        <span class="absolute top-2 right-2.5 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
+                                                                    </button>
+                                                                    <div class="h-8 w-[1px] bg-gray-200 mx-2"></div>
+                                                                    <button class="flex items-center gap-3 hover:bg-gray-100 p-1.5 rounded-lg transition-all" type="button">
+                                                                        <div class="text-right hidden sm:block">
+                                                                            <p class="text-sm font-semibold text-gray-900 leading-none">@User.Identity?.Name</p>
+                                                                            <p class="text-xs text-gray-500 mt-1">Super Admin</p>
+                                                                        </div>
+                                                                        <div class="w-10 h-10 rounded-full bg-cover bg-center ring-2 ring-gray-100" data-alt="User profile avatar portrait" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAm7E1YLYe08sPS7XZOnRG0K62U5Vz9vG-l0aWVhAqDc9xc3Moi6sze9eriR1X7KwzLy45VRKcg4aZPUb4awib2X5AQF6mpd5k2l32tZPlQ6-O5hMffdsxf6cIHJsdfrBSdJ-wsZ7IhRjDDJT_T_1TcY_tSNeim_ym3r3FdsMg4cF8h0XgHHyRezXHaRIs96tiNFKykRees9dtkSHwxgw_f8hxk9E7mXCtYx2kjufDbayhgYoXMEZM5iG_34DO_HJJAPF2Xn7WuR_4c')"></div>
+                                                                    </button>
+                                                                </div>
+                                                            </header>
+                                                            <main class="flex-1 overflow-y-auto p-8">
+                                                                @RenderBody()
+                                                            </main>
+                                                        </div>
+                                                    </div>
+
+
+                                                    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.2/signalr.min.js"></script>
+                                                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+                                                    <script>
+                                                        (function () {
+
+                                                            const isAdmin = @User.IsInRole("Admin").ToString().ToLower();
+                                                            if (!isAdmin) return;
+
+                                                            const connection = new signalR.HubConnectionBuilder()
+                                                                .withUrl("/hubs/notification")
+                                                                .withAutomaticReconnect()
+                                                                .build();
+
+                                                            function increaseErrorBadge() {
+                                                                const badge = document.getElementById("adminErrorBadge");
+                                                                if (!badge) return;
+
+                                                                const current = parseInt(badge.textContent || "0", 10) || 0;
+                                                                badge.textContent = (current + 1).toString();
+                                                                badge.style.display = "inline-block";
+                                                            }
+
+                                                            connection.start()
+                                                                .then(() => connection.invoke("JoinUserGroup", "admins"))
+                                                                .catch(err => console.error("SignalR admin error:", err));
+
+                                                            connection.on("NewError", function (data) {
+                                                                increaseErrorBadge();
+
+                                                                Swal.fire({
+                                                                    toast: true,
+                                                                    position: 'top-end',
+                                                                    icon: 'error',
+                                                                    title: 'Yeni Sistem Hatası',
+                                                                    text: data.message,
+                                                                    showConfirmButton: false,
+                                                                    timer: 4000
+                                                                });
+                                                            });
+
+                                                           
+                                                            setInterval(async function () {
+                                                                try {
+                                                                    const response = await fetch('/Admin/Dashboard/GetErrorCount');
+                                                                    const data = await response.json();
+
+                                                                    const badge = document.getElementById("adminErrorBadge");
+                                                                    if (badge && data.count > 0) {
+                                                                        badge.textContent = data.count;
+                                                                        badge.style.display = "inline-block";
+                                                                    }
+                                                                } catch (error) {
+                                                                    console.error('Error count update failed:', error);
+                                                                }
+                                                         
+                                                            }, 30000);
+
+                                                        })();
+                                                    </script>
+
+                                                    @RenderSection("Scripts", required: false)
+
+                    </body>
 </html>

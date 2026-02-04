@@ -2,140 +2,179 @@
 @model DashboardViewModel
 
 @{
-    ViewData["Title"] = "Admin Dashboard";
+
+    ViewData["Title"] = "Dashboard Overview";
 }
 
-<div class="analysis-area">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-3 col-md-6">
-                <div class="analysis-progrebar-ctn">
-                    <h4>Toplam Kullanıcı</h4>
-                    <h2>@Model.UserCount</h2>
+
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
+                    <p class="text-gray-500 text-sm mt-1">Welcome back, here's what's happening today.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button class="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center gap-2" type="button">
+                        <span class="material-symbols-outlined text-lg">calendar_today</span>
+                        Last 24 Hours
+                    </button>
+                    <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2" type="button">
+                        <span class="material-symbols-outlined text-lg">download</span>
+                        Export Report
+                    </button>
                 </div>
             </div>
 
-            <div class="col-lg-3 col-md-6">
-                <div class="analysis-progrebar-ctn">
-                    <h4>Toplam Mesaj</h4>
-                    <h2>@Model.MessageCount</h2>
-                    <p>@Model.UnreadMessageCount okunmamış</p>
-                </div>
-            </div>
+           
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                                <span class="material-symbols-outlined">person</span>
+                            </div>
 
-            <div class="col-lg-3 col-md-6">
-                <div class="analysis-progrebar-ctn">
-                    <h4>Taslak / Çöp</h4>
-                    <h2>@Model.DraftCount / @Model.TrashCount</h2>
-                </div>
-            </div>
+                           
+                                <span class="text-emerald-500 text-xs font-bold flex items-center">+12%</span>
+                            </div>
+                            <p class="text-sm text-gray-500">Total Users</p>
+                            <h3 class="text-2xl font-bold text-gray-900">@Model.UserCount</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                    <span class="material-symbols-outlined">mail</span>
+                                </div>
 
-            <div class="col-lg-3 col-md-6">
-                <div class="analysis-progrebar-ctn">
-                    <h4>Error (24s)</h4>
-                    <h2 class="text-danger">@Model.ErrorCountLast24h</h2>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                               
+                                    <span class="text-emerald-500 text-xs font-bold flex items-center">+5%</span>
+                                </div>
+                                <p class="text-sm text-gray-500">Total Messages</p>
+                                <h3 class="text-2xl font-bold text-gray-900">@Model.MessageCount</h3>
+                                <p class="text-xs text-gray-400 mt-1">@Model.UnreadMessageCount unread</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                                        <span class="material-symbols-outlined">draft</span>
+                                    </div>
+                                    <span class="text-rose-500 text-xs font-bold flex items-center">-2%</span>
+                                </div>
+                                <p class="text-sm text-gray-500">Draft / Trash</p>
+                                <h3 class="text-2xl font-bold text-gray-900">@Model.DraftCount / @Model.TrashCount</h3>
+                            </div>
+                            <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="p-2 bg-rose-50 text-rose-600 rounded-lg">
+                                        <span class="material-symbols-outlined">warning</span>
+                                    </div>
+                                    <span class="text-rose-500 text-xs font-bold flex items-center">24h</span>
+                                </div>
+                                <p class="text-sm text-gray-500">Errors (24h)</p>
+                                <h3 class="text-2xl font-bold text-gray-900">@Model.ErrorCountLast24h</h3>
+                            </div>
+                        </div>
 
-<div class="data-table-area">
-    <div class="container">
-        <div class="row">
+                       
+                                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                                                <div class="lg:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm p-6 min-h-[400px]">
+                                                    <div class="flex items-center justify-between mb-6">
+                                                        <h4 class="font-bold text-gray-900">Message Trends</h4>
+                                                        <div class="flex gap-2">
+                                                            <button class="px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary" type="button">Daily</button>
+                                                            <button class="px-3 py-1 text-xs font-medium rounded-full text-gray-500 hover:bg-gray-100" type="button">Weekly</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="w-full h-64 bg-gray-50 rounded-lg flex items-center justify-center border border-dashed border-gray-200">
+                                                        <span class="text-gray-400 text-sm">Interactive Analytics Chart Placeholder</span>
+                                                    </div>
+                                                </div>
+                                                <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+                                                    <h4 class="font-bold text-gray-900 mb-6">Recent Activities</h4>
+                                                    <div class="space-y-6">
+                                                        <div class="flex gap-4">
+                                                            <div class="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+                                                            <div>
+                                                                <p class="text-sm text-gray-900 font-medium">New user registered</p>
+                                                                <p class="text-xs text-gray-500">2 minutes ago</p>
+                                                            </div>
+                                                        </div>
 
-            <!-- 🔹 Son Mesajlar -->
-            <div class="col-lg-6">
-                <div class="data-table-list">
-                    <div class="basic-tb-hd">
-                        <h2>Son Mesajlar</h2>
-                    </div>
+                                                      
+                                                                <div class="flex gap-4">
+                                                                    <div class="w-2 h-2 rounded-full bg-amber-500 mt-2 flex-shrink-0"></div>
+                                                                    <div>
+                                                                        <p class="text-sm text-gray-900 font-medium">System backup completed</p>
+                                                                        <p class="text-xs text-gray-500">45 minutes ago</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="flex gap-4">
+                                                                    <div class="w-2 h-2 rounded-full bg-emerald-500 mt-2 flex-shrink-0"></div>
+                                                                    <div>
+                                                                        <p class="text-sm text-gray-900 font-medium">Inbox size limit adjusted</p>
+                                                                        <p class="text-xs text-gray-500">3 hours ago</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="flex gap-4">
+                                                                    <div class="w-2 h-2 rounded-full bg-gray-300 mt-2 flex-shrink-0"></div>
+                                                                    <div>
+                                                                        <p class="text-sm text-gray-900 font-medium">John Doe updated settings</p>
+                                                                        <p class="text-xs text-gray-500">5 hours ago</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <button class="w-full mt-8 py-2 text-sm text-primary font-medium hover:underline" type="button">View all activities</button>
+                                                        </div>
+                                                    </div>
 
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Gönderen</th>
-                                <th>Konu</th>
-                                <th>Kategori</th>
-                                <th>Tarih</th>
-                                <th>Durum</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var m in Model.RecentMessages)
-                            {
-                                <tr>
-                                    <td>@m.SenderEmail</td>
-                                    <td>@m.Subject</td>
-                                    <td>@m.CategoryName</td>
-                                    <td>@m.SendDate.ToString("dd.MM.yyyy HH:mm")</td>
-                                    <td>
-                                        @if (m.IsRead)
-                                        {
-                                            <span class="label label-success">Okundu</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="label label-warning">Okunmadı</span>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                                                    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                                                        <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
+                                                            <div>
+                                                                <h3 class="text-lg font-bold text-gray-900">Recent Errors</h3>
+                                                                <p class="text-sm text-gray-500">Latest Elasticsearch log entries</p>
+                                                            </div>
+                                                            @if (!string.IsNullOrWhiteSpace(Model.KibanaUrl))
+                                                            {
+                                                                <a href="@Model.KibanaUrl" target="_blank" class="text-primary text-sm font-semibold hover:underline">View All Logs</a>
+                                                            }
+                                                        </div>
+                                                        <div class="overflow-x-auto">
+                                                            <table class="w-full text-left">
+                                                                <thead>
+                                                                    <tr class="bg-gray-50">
+                                                                        <th class="px-6 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Timestamp</th>
+                                                                        <th class="px-6 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Error Source</th>
+                                                                        <th class="px-6 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Type</th>
+                                                                        <th class="px-6 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                                                                        <th class="px-6 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Action</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody class="divide-y divide-gray-200">
+                                                                    @foreach (var log in Model.LatestElasticLogs)
+                                                                    {
+                                                                        var statusClass = log.Level == "Error" || log.Level == "Fatal"
+                                                                        ? "bg-rose-100 text-rose-700"
+                                                                        : log.Level == "Warning"
+                                                                        ? "bg-amber-100 text-amber-700"
+                                                                        : "bg-blue-100 text-blue-700";
+                                                                        var source = !string.IsNullOrWhiteSpace(log.RequestPath) ? log.RequestPath : "System";
+                                                                        var typeLabel = log.ExceptionMessage ?? log.MessageTemplate ?? log.RenderedMessage ?? "Log event";
 
-            <!-- 🔥 Elasticsearch Logları -->
-            <div class="col-lg-6">
-                <div class="data-table-list">
-                    <div class="basic-tb-hd">
-                        <h2>Son Loglar (Elasticsearch)</h2>
-                    </div>
-
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Zaman</th>
-                                <th>Level</th>
-                                <th>Mesaj</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var log in Model.LatestElasticLogs)
-                            {
-                                var rowClass =
-                                log.Level == "Error" || log.Level == "Fatal"
-                                ? "danger"
-                                : "";
-
-                                <tr class="@rowClass">
-                                    <td>@log.Timestamp.ToString("HH:mm:ss")</td>
-                                    <td>@log.Level</td>
-                                    <td>
-                                        <a asp-area="Admin"
-                                           asp-controller="Logs"
-                                           asp-action="Detail"
-                                           asp-route-id="@log.Id">
-                                            @(log.MessageTemplate ?? log.RenderedMessage)
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-
-                    @if (!string.IsNullOrWhiteSpace(Model.KibanaUrl))
-                    {
-                        <a href="@Model.KibanaUrl"
-                           target="_blank"
-                           class="btn btn-info btn-sm">
-                            Kibana’da Detaylı Gör
-                        </a>
-                    }
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
+                                                                        <tr class="hover:bg-gray-50 transition-colors">
+                                                                            <td class="px-6 py-4 text-sm text-gray-600">@log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                                                            <td class="px-6 py-4 text-sm font-medium text-gray-900">@source</td>
+                                                                            <td class="px-6 py-4 text-sm text-gray-500">@typeLabel</td>
+                                                                            <td class="px-6 py-4">
+                                                                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase @statusClass">
+                                                                                    @log.Level
+                                                                                </span>
+                                                                            </td>
+                                                                            <td class="px-6 py-4 text-right">
+                                                                                <a asp-area="Admin" asp-controller="Logs" asp-action="Detail" asp-route-id="@log.Id" class="text-gray-400 hover:text-primary transition-colors">
+                                                                                    <span class="material-symbols-outlined">more_vert</span>
+                                                                                </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
