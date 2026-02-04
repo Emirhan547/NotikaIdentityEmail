@@ -34,11 +34,7 @@ namespace NotikaIdentityEmail.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            Log.Information(
-                LogMessages.UserRegisterStarted,
-                model.Email,
-                model.Username
-            );
+        
 
             var user = new AppUser
             {
@@ -52,13 +48,9 @@ namespace NotikaIdentityEmail.Controllers
 
             if (!result.Succeeded)
             {
-                var errors = string.Join(" | ", result.Errors.Select(e => e.Description));
-
-                Log.Warning(
-                    LogMessages.UserRegisterFailed,
-                    model.Email,
-                    errors
-                );
+                Log.ForContext("OperationType", LogContextValues.OperationUser)
+                     .ForContext("UserEmail", model.Email)
+                     .Warning(UserLogMessages.UserCreateFailed);
 
                 foreach (var error in result.Errors)
                     ModelState.AddModelError("", error.Description);
@@ -84,23 +76,18 @@ namespace NotikaIdentityEmail.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(
-                    ex,
-                    "Activation email failed after user creation. UserId: {UserId}, Email: {Email}",
-                    user.Id,
-                    user.Email
-                );
+                Log.ForContext("OperationType", LogContextValues.OperationSystem)
+                     .ForContext("UserEmail", user.Email)
+                     .Error(ex, LogMessages.ActivationEmailFailed);
 
                 TempData["WarningMessage"] =
                     "Hesabınız oluşturuldu ancak aktivasyon e-postası gönderilemedi. " +
                     $"Aktivasyon kodunuz: {activationCode}";
             }
+            Log.ForContext("OperationType", LogContextValues.OperationUser)
+                .ForContext("UserEmail", user.Email)
+                .Information(UserLogMessages.UserCreated);
 
-            Log.Information(
-                LogMessages.UserRegisterSucceeded,
-                user.Id,
-                user.Email
-            );
 
             return RedirectToAction("Index", "Activation");
         }

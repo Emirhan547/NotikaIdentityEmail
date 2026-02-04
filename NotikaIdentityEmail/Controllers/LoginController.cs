@@ -45,10 +45,8 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.Warning(
-                    LogMessages.LoginFailed,
-                    model.Username
-                );
+                Log.ForContext("OperationType", LogContextValues.OperationAuth)
+                    .Warning(AuthLogMessages.UserLoginFailed);
 
                 ModelState.AddModelError("", "Kullanıcı adı veya şifre hatalı");
                 return View(model);
@@ -56,11 +54,9 @@ namespace NotikaIdentityEmail.Controllers
 
             if (!user.EmailConfirmed)
             {
-                Log.Warning(
-                    "Login blocked - email not confirmed. UserId: {UserId}, Email: {Email}",
-                    user.Id,
-                    user.Email
-                );
+                Log.ForContext("OperationType", LogContextValues.OperationAuth)
+                     .ForContext("UserEmail", user.Email)
+                     .Warning(AuthLogMessages.UserLoginFailed);
 
                 ModelState.AddModelError("", "Email adresiniz doğrulanmamış");
                 return View(model);
@@ -75,37 +71,33 @@ namespace NotikaIdentityEmail.Controllers
 
             if (!result.Succeeded)
             {
-                Log.Warning(
-                    LogMessages.LoginFailed,
-                    model.Username
-                );
+                Log.ForContext("OperationType", LogContextValues.OperationAuth)
+                    .ForContext("UserEmail", user.Email)
+                    .Warning(AuthLogMessages.UserLoginFailed);
 
                 ModelState.AddModelError("", "Kullanıcı adı veya şifre hatalı");
                 return View(model);
             }
 
-            Log.Information(
-                LogMessages.LoginSucceeded,
-                user.Id,
-                user.UserName
-            );
+            Log.ForContext("OperationType", LogContextValues.OperationAuth)
+                .ForContext("UserEmail", user.Email)
+                .Information(AuthLogMessages.UserLoginSuccess);
 
             // 🎯 ROLE BASED REDIRECT
             if (await _userManager.IsInRoleAsync(user, "Admin"))
             {
-                Log.Information("Admin login redirect. UserId: {UserId}", user.Id);
                 return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
             }
 
             if (await _userManager.IsInRoleAsync(user, "User"))
             {
-                Log.Information("User login redirect. UserId: {UserId}", user.Id);
                 return RedirectToAction("Inbox", "Message");
             }
 
             // ⚠️ Rolü olmayan kullanıcı
-            Log.Warning("Login succeeded but user has no role. UserId: {UserId}", user.Id);
-
+            Log.ForContext("OperationType", LogContextValues.OperationAuth)
+                .ForContext("UserEmail", user.Email)
+                .Warning(LogMessages.UserRoleMissing);
             await _signInManager.SignOutAsync();
             ModelState.AddModelError("", "Kullanıcı rolü tanımlı değil");
             return View(model);
@@ -118,10 +110,13 @@ namespace NotikaIdentityEmail.Controllers
 
             await _signInManager.SignOutAsync();
 
-            Log.Information(
-                "User logged out. Username: {Username}",
-                username
-            );
+            var log = Log.ForContext("OperationType", LogContextValues.OperationAuth);
+            if (!string.IsNullOrWhiteSpace(username))
+            {
+                log = log.ForContext("UserEmail", username);
+            }
+
+            log.Information(AuthLogMessages.UserLogout);
 
             return RedirectToAction("UserLogin");
         }

@@ -31,20 +31,14 @@ namespace NotikaIdentityEmail.Controllers
                 return View(model);
             }
 
-            Log.Information(
-                LogMessages.ActivationStarted,
-                model.Email,
-                model.Code
-            );
+           
 
             var user = await _userManager.FindByEmailAsync(model.Email);
 
             if (user == null)
             {
-                Log.Warning(
-                    LogMessages.ActivationFailedUserNotFound,
-                    model.Email
-                );
+                Log.ForContext("OperationType", LogContextValues.OperationAuth)
+                     .Warning(LogMessages.UserNotFound);
 
                 ModelState.AddModelError("", "Kullanıcı bulunamadı");
                 return View(model);
@@ -52,10 +46,9 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user.ActivationCode != model.Code)
             {
-                Log.Warning(
-                    LogMessages.ActivationFailedWrongCode,
-                    model.Email
-                );
+                Log.ForContext("OperationType", LogContextValues.OperationAuth)
+                     .ForContext("UserEmail", user.Email)
+                     .Warning(LogMessages.ActivationCodeInvalid);
 
                 ModelState.AddModelError("", "Aktivasyon kodu hatalı");
                 return View(model);
@@ -66,11 +59,9 @@ namespace NotikaIdentityEmail.Controllers
 
             await _userManager.UpdateAsync(user);
 
-            Log.Information(
-                LogMessages.ActivationSucceeded,
-                user.Id,
-                user.Email
-            );
+            Log.ForContext("OperationType", LogContextValues.OperationAuth)
+                .ForContext("UserEmail", user.Email)
+                .Information(AuthLogMessages.UserActivated);
 
             return RedirectToAction("UserLogin", "Login");
         }

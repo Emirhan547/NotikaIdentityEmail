@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.SignalR;
 using NotikaIdentityEmail.Hubs;
 
 using Serilog;
+using ILogger = Serilog.ILogger;
 
 namespace NotikaIdentityEmail.Controllers
 {
@@ -42,11 +43,12 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.Warning("Inbox access failed - user not found in db. IdentityName: {IdentityName}", User.Identity?.Name);
+                Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                     .Warning(LogMessages.UserNotFound);
                 return Unauthorized();
             }
 
-            Log.Information("Inbox opened. User: {UserEmail}, Query: {Query}", user.Email, query);
+          
 
             // ✅ DÜZELTME: N+1 problemi çözüldü - tek query
             var values = from m in _context.Messages
@@ -78,12 +80,12 @@ namespace NotikaIdentityEmail.Controllers
 
             var list = await values.ToListAsync();
 
-            Log.Information("Inbox listed. User: {UserEmail}, Count: {Count}, Query: {Query}", user.Email, list.Count, query);
+          
 
             return View(list);
         }
 
- 
+
 
         // 📤 Sendbox
         public async Task<IActionResult> Sendbox(string? query)
@@ -92,11 +94,12 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.Warning("Sendbox access failed - user not found in db. IdentityName: {IdentityName}", User.Identity?.Name);
+                Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                    .Warning(LogMessages.UserNotFound);
                 return Unauthorized();
             }
 
-            Log.Information("Sendbox opened. User: {UserEmail}, Query: {Query}", user.Email, query);
+
 
             var values = from m in _context.Messages
                          join u in _context.Users
@@ -132,7 +135,6 @@ namespace NotikaIdentityEmail.Controllers
 
             var list = await values.ToListAsync();
 
-            Log.Information("Sendbox listed. User: {UserEmail}, Count: {Count}, Query: {Query}", user.Email, list.Count, query);
 
             return View(list);
         }
@@ -144,22 +146,24 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.Warning("MessageDetail access failed - user not found. IdentityName: {IdentityName}", User.Identity?.Name);
+                Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                                    .Warning(LogMessages.UserNotFound);
                 return Unauthorized();
             }
 
             var value = await _context.Messages.FirstOrDefaultAsync(x => x.MessageId == id && !x.IsDeleted);
             if (value == null)
             {
-                Log.Warning("MessageDetail not found. User: {UserEmail}, MessageId: {MessageId}", user.Email, id);
+                Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                                    .Warning(LogMessages.MessageNotFound);
                 return NotFound();
             }
 
             // Yetki kontrolü (message sadece sender/receiver tarafından görülmeli)
             if (value.SenderEmail != user.Email && value.ReceiverEmail != user.Email)
             {
-                Log.Warning("MessageDetail forbidden. User: {UserEmail}, MessageId: {MessageId}, Sender: {Sender}, Receiver: {Receiver}",
-                    user.Email, id, value.SenderEmail, value.ReceiverEmail);
+                Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                     .Warning(LogMessages.AccessForbidden);
                 return Forbid();
             }
 
@@ -178,16 +182,12 @@ namespace NotikaIdentityEmail.Controllers
                         subject = value.Subject
                     });
 
-                Log.Information(
-                    "Message read notification sent. MessageId: {MessageId}, Sender: {Sender}, Reader: {Reader}",
-                    value.MessageId,
-                    value.SenderEmail,
-                    user.Email
-                );
+                var categoryName = await GetCategoryNameAsync(value.CategoryId);
+                var logger = CreateMessageLogger(value.SenderEmail, value.ReceiverEmail, categoryName, LogContextValues.MessageStatusRead);
+                logger.Information(MessageLogMessages.MessageRead);
             }
 
 
-            Log.Information("MessageDetail opened. User: {UserEmail}, MessageId: {MessageId}, IsRead: {IsRead}", user.Email, value.MessageId, value.IsRead);
 
             return View(value);
         }
@@ -197,7 +197,7 @@ namespace NotikaIdentityEmail.Controllers
         public IActionResult ComposeMessage()
         {
             LoadCategories();
-            Log.Information("ComposeMessage GET opened.");
+         
             return View(new ComposeMessageViewModel());
         }
 
@@ -210,19 +210,12 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.Warning("ComposeMessage POST failed - user not found. IdentityName: {IdentityName}", User.Identity?.Name);
-                return Unauthorized();
+                Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                                    .Warning(LogMessages.UserNotFound); return Unauthorized();
             }
 
             var isDraft = string.Equals(action, "draft", StringComparison.OrdinalIgnoreCase);
 
-            Log.Information(
-                LogMessages.MessageComposeStarted,
-                user.Email,
-                model.ReceiverEmail,
-                isDraft,
-                model.CategoryId
-            );
 
             // Draft değilse receiver doğrula
             if (!isDraft)
@@ -232,16 +225,15 @@ namespace NotikaIdentityEmail.Controllers
                 {
                     ModelState.AddModelError(nameof(model.ReceiverEmail), "Alıcı email adresi sistemde bulunamadı.");
 
-                    Log.Warning("ComposeMessage validation failed - receiver not found. Sender: {Sender}, Receiver: {Receiver}, CategoryId: {CategoryId}",
-                        user.Email, model.ReceiverEmail, model.CategoryId);
+                    Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                        .Warning(LogMessages.UserNotFound);
                 }
             }
 
             if (!ModelState.IsValid)
             {
                 LoadCategories();
-                Log.Warning("ComposeMessage ModelState invalid. Sender: {Sender}, Receiver: {Receiver}, IsDraft: {IsDraft}, CategoryId: {CategoryId}",
-                    user.Email, model.ReceiverEmail, isDraft, model.CategoryId);
+                
                 return View(model);
             }
 
@@ -261,8 +253,10 @@ namespace NotikaIdentityEmail.Controllers
             _context.Messages.Add(message);
             await _context.SaveChangesAsync();
 
-            Log.Information(LogMessages.MessageComposeSucceeded, message.MessageId);
-            // 🔔 Draft değilse alıcıya realtime bildirim
+            var categoryName = await GetCategoryNameAsync(message.CategoryId);
+            var status = GetMessageStatus(message);
+            var logger = CreateMessageLogger(message.SenderEmail, message.ReceiverEmail, categoryName, status);
+            logger.Information(message.IsDraft ? MessageLogMessages.MessageDraftSaved : MessageLogMessages.MessageSent);            // 🔔 Draft değilse alıcıya realtime bildirim
             if (!message.IsDraft)
             {
                 await _hubContext.Clients
@@ -276,8 +270,7 @@ namespace NotikaIdentityEmail.Controllers
                         messageId = message.MessageId
                     });
 
-                Log.Information("SignalR NewMessage sent. Sender: {Sender}, Receiver: {Receiver}, MessageId: {MessageId}",
-                    message.SenderEmail, message.ReceiverEmail, message.MessageId);
+               
             }
 
 
@@ -291,11 +284,10 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.Warning("GetMessageListByCategory failed - user not found. IdentityName: {IdentityName}", User.Identity?.Name);
-                return Unauthorized();
+                Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                                    .Warning(LogMessages.UserNotFound); return Unauthorized();
             }
 
-            Log.Information("GetMessageListByCategory opened. User: {UserEmail}, CategoryId: {CategoryId}", user.Email, id);
 
             var values = (from m in _context.Messages
                           join u in _context.Users
@@ -320,7 +312,6 @@ namespace NotikaIdentityEmail.Controllers
                               IsRead = m.IsRead
                           }).ToList();
 
-            Log.Information("GetMessageListByCategory listed. User: {UserEmail}, CategoryId: {CategoryId}, Count: {Count}", user.Email, id, values.Count);
 
             return View(values);
         }
@@ -332,11 +323,10 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.Warning("Draft access failed - user not found. IdentityName: {IdentityName}", User.Identity?.Name);
-                return Unauthorized();
+                Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                                   .Warning(LogMessages.UserNotFound); return Unauthorized();
             }
 
-            Log.Information("Draft opened. User: {UserEmail}, Query: {Query}", user.Email, query);
 
             var values = from m in _context.Messages
                          join u in _context.Users
@@ -372,7 +362,6 @@ namespace NotikaIdentityEmail.Controllers
 
             var list = await values.ToListAsync();
 
-            Log.Information("Draft listed. User: {UserEmail}, Count: {Count}, Query: {Query}", user.Email, list.Count, query);
 
             return View(list);
         }
@@ -384,11 +373,10 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.Warning("Trash access failed - user not found. IdentityName: {IdentityName}", User.Identity?.Name);
-                return Unauthorized();
+                Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                                    .Warning(LogMessages.UserNotFound); return Unauthorized();
             }
 
-            Log.Information("Trash opened. User: {UserEmail}, Query: {Query}", user.Email, query);
 
             var values = from m in _context.Messages
                          join c in _context.Categories
@@ -418,7 +406,6 @@ namespace NotikaIdentityEmail.Controllers
 
             var list = await values.ToListAsync();
 
-            Log.Information("Trash listed. User: {UserEmail}, Count: {Count}, Query: {Query}", user.Email, list.Count, query);
 
             return View(list);
         }
@@ -430,7 +417,8 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.Warning("Reply failed - user not found. IdentityName: {IdentityName}", User.Identity?.Name);
+                Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                    .Warning(LogMessages.UserNotFound);
                 return Unauthorized();
             }
 
@@ -439,7 +427,8 @@ namespace NotikaIdentityEmail.Controllers
 
             if (message == null)
             {
-                Log.Warning("Reply not found or forbidden. User: {UserEmail}, MessageId: {MessageId}", user.Email, id);
+                Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                   .Warning(LogMessages.MessageNotFound);
                 return NotFound();
             }
 
@@ -451,7 +440,6 @@ namespace NotikaIdentityEmail.Controllers
                 Subject = $"Re: {message.Subject}"
             };
 
-            Log.Information("Reply prepared. User: {UserEmail}, MessageId: {MessageId}, Receiver: {ReceiverEmail}", user.Email, id, model.ReceiverEmail);
 
             return View("ComposeMessage", model);
         }
@@ -463,8 +451,8 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.Warning("Forward failed - user not found. IdentityName: {IdentityName}", User.Identity?.Name);
-                return Unauthorized();
+                Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                                    .Warning(LogMessages.UserNotFound); return Unauthorized();
             }
 
             var message = await _context.Messages.FirstOrDefaultAsync(x =>
@@ -474,8 +462,8 @@ namespace NotikaIdentityEmail.Controllers
 
             if (message == null)
             {
-                Log.Warning("Forward not found or forbidden. User: {UserEmail}, MessageId: {MessageId}", user.Email, id);
-                return NotFound();
+                Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                                    .Warning(LogMessages.MessageNotFound); return NotFound();
             }
 
             LoadCategories();
@@ -486,7 +474,6 @@ namespace NotikaIdentityEmail.Controllers
                 MessageDetail = message.MessageDetail
             };
 
-            Log.Information("Forward prepared. User: {UserEmail}, MessageId: {MessageId}", user.Email, id);
 
             return View("ComposeMessage", model);
         }
@@ -498,8 +485,8 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.Warning("MoveToTrash failed - user not found. IdentityName: {IdentityName}", User.Identity?.Name);
-                return Unauthorized();
+                Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                                   .Warning(LogMessages.UserNotFound); return Unauthorized();
             }
 
             var message = await _context.Messages.FirstOrDefaultAsync(x =>
@@ -509,19 +496,17 @@ namespace NotikaIdentityEmail.Controllers
 
             if (message == null)
             {
-                Log.Warning("MoveToTrash not found or forbidden. User: {UserEmail}, MessageId: {MessageId}", user.Email, id);
-                return NotFound();
+                Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                                    .Warning(LogMessages.MessageNotFound); return NotFound();
             }
 
             message.IsDeleted = true;
             message.DeletedAt = DateTime.Now;
             await _context.SaveChangesAsync();
 
-            Log.Information(
-                LogMessages.MessageMoveToTrash,
-                message.MessageId,
-                user.Email
-            );
+            var categoryName = await GetCategoryNameAsync(message.CategoryId);
+            var logger = CreateMessageLogger(message.SenderEmail, message.ReceiverEmail, categoryName, LogContextValues.MessageStatusTrash);
+            logger.Information(MessageLogMessages.MessageMovedToTrash);
 
             return RedirectToAction(returnAction);
         }
@@ -534,6 +519,37 @@ namespace NotikaIdentityEmail.Controllers
                 Text = c.CategoryName,
                 Value = c.CategoryId.ToString()
             });
+        }
+        private ILogger CreateMessageLogger(string senderEmail, string receiverEmail, string? categoryName, string messageStatus)
+        {
+            return Log.ForContext("OperationType", LogContextValues.OperationMessage)
+                .ForContext("SenderEmail", senderEmail)
+                .ForContext("ReceiverEmail", receiverEmail)
+                .ForContext("Category", categoryName ?? LogContextValues.CategoryFallback)
+                .ForContext("MessageStatus", messageStatus);
+        }
+
+        private static string GetMessageStatus(Message message)
+        {
+            if (message.IsDeleted)
+            {
+                return LogContextValues.MessageStatusTrash;
+            }
+
+            if (message.IsDraft)
+            {
+                return LogContextValues.MessageStatusDraft;
+            }
+
+            return message.IsRead ? LogContextValues.MessageStatusRead : LogContextValues.MessageStatusUnread;
+        }
+
+        private async Task<string?> GetCategoryNameAsync(int categoryId)
+        {
+            return await _context.Categories
+                .Where(category => category.CategoryId == categoryId)
+                .Select(category => category.CategoryName)
+                .FirstOrDefaultAsync();
         }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using NotikaIdentityEmail.Context;
 using NotikaIdentityEmail.Entities;
 using NotikaIdentityEmail.Hubs;
+using NotikaIdentityEmail.Logging;
 using NotikaIdentityEmail.Models;
 using NotikaIdentityEmail.Models.IdentityModels;
 using NotikaIdentityEmail.Services;
@@ -21,6 +22,8 @@ var builder = WebApplication.CreateBuilder(args);
 // ✅ Serilog bootstrapping
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.With<SeverityEnricher>()
+    .Filter.ByExcluding(LogFilter.ShouldExclude)
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -87,17 +90,7 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// ✅ Global request logging (HTTP)
-app.UseSerilogRequestLogging(opts =>
-{
-    opts.GetLevel = (httpCtx, elapsedMs, ex) =>
-    {
-        if (ex != null) return LogEventLevel.Error;
-        if (httpCtx.Response.StatusCode >= 500) return LogEventLevel.Error;
-        if (httpCtx.Response.StatusCode >= 400) return LogEventLevel.Warning;
-        return LogEventLevel.Information;
-    };
-});
+
 
 // ✅ YENİ: User email enrichment middleware
 app.Use(async (context, next) =>
@@ -146,14 +139,18 @@ app.MapHub<NotificationHub>("/hubs/notification");
 
 try
 {
-    Log.Information("Application starting up");
+    Log.ForContext("OperationType", LogContextValues.OperationSystem)
+        .Information(SystemLogMessages.SystemStarted);
     app.Run();
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "Application terminated unexpectedly");
+    Log.ForContext("OperationType", LogContextValues.OperationSystem)
+        .Fatal(ex, LogMessages.UnexpectedError);
 }
 finally
 {
+    Log.ForContext("OperationType", LogContextValues.OperationSystem)
+        .Information(SystemLogMessages.SystemStopped);
     Log.CloseAndFlush();
 }

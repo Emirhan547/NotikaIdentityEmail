@@ -1,0 +1,2 @@
+{"index":{"_index":"notika-logs-2026.02.04","_id":"1_f72f80c9-6664-4196-9e8c-2216f1716603"}}
+{"@timestamp":"2026-02-04T22:24:33.5910190+03:00","level":"Warning","messageTemplate":"Failed to create Elasticsearch template. Status: {StatusCode}","message":"Failed to create Elasticsearch template. Status: BadRequest","fields":{"StatusCode":"BadRequest","SourceContext":"NotikaIdentityEmail.Services.ElasticIndexSetupService","MachineName":"EMIRHANN","EnvironmentName":"Development","ThreadId":6}}

@@ -18,7 +18,7 @@ namespace NotikaIdentityEmail.Services
 
         public async Task SendAsync(string to, string subject, string body)
         {
-            Log.Information(LogMessages.EmailSendStarted, to, subject);
+           
 
             try
             {
@@ -49,11 +49,13 @@ namespace NotikaIdentityEmail.Services
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
 
-                Log.Information(LogMessages.EmailSendSucceeded, to);
+              
             }
             catch (Exception ex)
             {
-                Log.Error(ex, LogMessages.EmailSendFailed, to);
+                Log.ForContext("OperationType", LogContextValues.OperationSystem)
+                     .ForContext("UserEmail", to)
+                     .Error(ex, LogMessages.UnexpectedError);
                 throw;
             }
         }
