@@ -163,6 +163,22 @@
                 });
             });
 
+            // ✅ YENİ: Real-time error count polling
+            setInterval(async function() {
+                try {
+                    const response = await fetch('/Admin/Dashboard/GetErrorCount');
+                    const data = await response.json();
+
+                    const badge = document.getElementById("adminErrorBadge");
+                    if (badge && data.count > 0) {
+                        badge.textContent = data.count;
+                        badge.style.display = "inline-block";
+                    }
+                } catch (error) {
+                    console.error('Error count update failed:', error);
+                }
+            }, 30000); // Her 30 saniyede bir güncelle
+
         })();
     </script>
 

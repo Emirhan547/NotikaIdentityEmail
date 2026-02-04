@@ -1,4 +1,5 @@
 ﻿@using NotikaIdentityEmail.Entities
+@using Ganss.Xss
 @model Message
 @{
     ViewData["Title"] = "MessageDetail";
@@ -20,7 +21,6 @@
     {
         timeAgoText = $"{(int)timeDiff.TotalHours} saat önce";
     }
-
     else if (timeDiff.TotalDays < 7)
     {
         timeAgoText = $"{(int)timeDiff.TotalDays} gün önce";
@@ -29,7 +29,6 @@
     {
         timeAgoText = Model.SendDate.ToString("dd MMMM yyyy");
     }
-
 }
 
 <div class="inbox-area">
@@ -47,14 +46,51 @@
                         <div class="view-ml-rl">
                             <p>@Model.SendDate.ToString("HH:mm") (<span style="color:#6c757d">@timeAgoText</span>)</p>
                         </div>
-                    </div>a
+                    </div>
                     <div class="mail-ads mail-vw-ph">
                         <p class="first-ph"><b>Konu: </b>@Model.Subject</p>
                         <p><b>Gönderici:</b> <a href="#">@Model.SenderEmail</a></p>
                         <p class="last-ph"><b>Tarih:</b> @Model.SendDate.ToString("dd MMMM yyyy")</p>
                     </div>
                     <div class="view-mail-atn">
-                        <p>@Html.Raw(Model.MessageDetail)</p>
+                        @{
+                            var sanitizer = new HtmlSanitizer();
+
+                            // İzin verilen tagler
+                            sanitizer.AllowedTags.Clear();
+                            sanitizer.AllowedTags.Add("p");
+                            sanitizer.AllowedTags.Add("br");
+                            sanitizer.AllowedTags.Add("strong");
+                            sanitizer.AllowedTags.Add("b");
+                            sanitizer.AllowedTags.Add("em");
+                            sanitizer.AllowedTags.Add("i");
+                            sanitizer.AllowedTags.Add("ul");
+                            sanitizer.AllowedTags.Add("ol");
+                            sanitizer.AllowedTags.Add("li");
+                            sanitizer.AllowedTags.Add("blockquote");
+                            sanitizer.AllowedTags.Add("h1");
+                            sanitizer.AllowedTags.Add("h2");
+                            sanitizer.AllowedTags.Add("h3");
+                            sanitizer.AllowedTags.Add("h4");
+                            sanitizer.AllowedTags.Add("h5");
+                            sanitizer.AllowedTags.Add("h6");
+
+                            // Attribute whitelist
+                            sanitizer.AllowedAttributes.Clear();
+                            sanitizer.AllowedAttributes.Add("href");
+                            sanitizer.AllowedAttributes.Add("title");
+
+                            // URL scheme whitelist
+                            sanitizer.AllowedSchemes.Clear();
+                            sanitizer.AllowedSchemes.Add("http");
+                            sanitizer.AllowedSchemes.Add("https");
+                            sanitizer.AllowedSchemes.Add("mailto");
+
+                            var safeHtml = sanitizer.Sanitize(Model.MessageDetail);
+                        }
+                        @Html.Raw(safeHtml)
+
+                        @Html.Raw(safeHtml)
                     </div>
 
                     <div class="vw-ml-action-ls text-right mg-t-20">

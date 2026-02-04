@@ -23,13 +23,16 @@ namespace NotikaIdentityEmail.Controllers
             _userManager = userManager;
         }
 
+        // 🔐 LOGIN GET
         [HttpGet]
         public IActionResult UserLogin()
         {
             return View();
         }
 
+        // 🔐 LOGIN POST
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UserLogin(UserLoginViewModel model)
         {
             if (!ModelState.IsValid)
@@ -87,9 +90,28 @@ namespace NotikaIdentityEmail.Controllers
                 user.UserName
             );
 
-            return RedirectToAction("Index", "Inbox");
+            // 🎯 ROLE BASED REDIRECT
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                Log.Information("Admin login redirect. UserId: {UserId}", user.Id);
+                return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+            }
+
+            if (await _userManager.IsInRoleAsync(user, "User"))
+            {
+                Log.Information("User login redirect. UserId: {UserId}", user.Id);
+                return RedirectToAction("Inbox", "Message");
+            }
+
+            // ⚠️ Rolü olmayan kullanıcı
+            Log.Warning("Login succeeded but user has no role. UserId: {UserId}", user.Id);
+
+            await _signInManager.SignOutAsync();
+            ModelState.AddModelError("", "Kullanıcı rolü tanımlı değil");
+            return View(model);
         }
 
+        // 🚪 LOGOUT
         public async Task<IActionResult> Logout()
         {
             var username = User.Identity?.Name;

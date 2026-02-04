@@ -14,8 +14,8 @@
     <input type="hidden"
            id="currentUserEmail"
            value="@(User.FindFirst(ClaimTypes.Email)?.Value
-                           ?? User.FindFirst("email")?.Value
-                           ?? "")" />
+                                      ?? User.FindFirst("email")?.Value
+                                      ?? "")" />
 
     @await Component.InvokeAsync("_UILayoutFooter")
 
@@ -48,10 +48,37 @@
                 badge.style.display = "inline-block";
             }
 
+            // ✅ DÜZELTME: Geliştirilmiş hata yönetimi
             connection.start()
                 .then(() => connection.invoke("JoinUserGroup", userEmail))
-                .then(() => console.log("SignalR connected:", userEmail))
-                .catch(err => console.error("SignalR error:", err));
+                .then(() => console.log("✅ SignalR connected:", userEmail))
+                .catch(err => {
+                    console.error("❌ SignalR connection error:", err);
+
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'warning',
+                        title: 'Bağlantı Hatası',
+                        text: 'Canlı bildirimler şu anda çalışmıyor.',
+                        showConfirmButton: false,
+                        timer: 4000
+                    });
+                });
+
+            // ✅ YENİ: Otomatik yeniden bağlanma durumu
+            connection.onreconnecting(error => {
+                console.warn("⚠️ SignalR reconnecting...", error);
+            });
+
+            connection.onreconnected(connectionId => {
+                console.log("✅ SignalR reconnected:", connectionId);
+                connection.invoke("JoinUserGroup", userEmail).catch(console.error);
+            });
+
+            connection.onclose(error => {
+                console.error("❌ SignalR connection closed:", error);
+            });
 
             // 📩 Yeni mesaj
             connection.on("NewMessage", function (data) {

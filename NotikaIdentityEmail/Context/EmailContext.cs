@@ -6,13 +6,13 @@ namespace NotikaIdentityEmail.Context
 {
     public class EmailContext : IdentityDbContext<AppUser>
     {
-         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public EmailContext(DbContextOptions<EmailContext> options) : base(options)
         {
-            optionsBuilder.UseSqlServer("Server=localhost\\SQLEXPRESS;initial Catalog=NotikaEmailDb;integrated security=true;trustServerCertificate=true");
         }
-        public DbSet<Category>Categories { get; set; }
-        public DbSet<Message>Messages { get; set; }
-        public DbSet<Notification>Notifications { get; set; }
-        public DbSet<Comment>Comments { get; set; }
+
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Comment> Comments { get; set; }
     }
-    }
+}

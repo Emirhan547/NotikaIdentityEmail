@@ -1,5 +1,4 @@
-﻿
-using NotikaIdentityEmail.Models.Elastics;
+﻿using NotikaIdentityEmail.Models.Elastics;
 using System.Net.Http.Json;
 
 namespace NotikaIdentityEmail.Services
@@ -8,11 +7,23 @@ namespace NotikaIdentityEmail.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<ElasticLogService> _logger;
 
-        public ElasticLogService(HttpClient httpClient, IConfiguration configuration)
+        public ElasticLogService(HttpClient httpClient, IConfiguration configuration, ILogger<ElasticLogService> logger)
         {
             _httpClient = httpClient;
             _configuration = configuration;
+            _logger = logger;
+
+            // Validate configuration
+            if (string.IsNullOrWhiteSpace(BaseUrl))
+            {
+                throw new InvalidOperationException("Elastic:BaseUrl configuration is missing");
+            }
+            if (string.IsNullOrWhiteSpace(IndexPattern))
+            {
+                throw new InvalidOperationException("Elastic:IndexPattern configuration is missing");
+            }
         }
 
         private string BaseUrl => _configuration["Elastic:BaseUrl"]!;
@@ -20,90 +31,138 @@ namespace NotikaIdentityEmail.Services
 
         public async Task<List<ElasticLogItemDto>> GetLatestAsync(int size = 20)
         {
-            var url = $"{BaseUrl}/{IndexPattern}/_search";
-
-            var body = new
+            try
             {
-                size,
-                sort = new object[]
+                var url = $"{BaseUrl}/{IndexPattern}/_search";
+
+                var body = new
                 {
-                    new Dictionary<string, object>
+                    size,
+                    sort = new object[]
                     {
-                        ["@timestamp"] = new { order = "desc" }
+                        new Dictionary<string, object>
+                        {
+                            ["@timestamp"] = new { order = "desc" }
+                        }
                     }
-                }
-            };
+                };
 
-            var resp = await _httpClient.PostAsJsonAsync(url, body);
-            resp.EnsureSuccessStatusCode();
+                var resp = await _httpClient.PostAsJsonAsync(url, body);
+                resp.EnsureSuccessStatusCode();
 
-            var data = await resp.Content.ReadFromJsonAsync<ElasticSearchResponse>();
-            if (data == null) return new List<ElasticLogItemDto>();
+                var data = await resp.Content.ReadFromJsonAsync<ElasticSearchResponse>();
+                if (data == null) return new List<ElasticLogItemDto>();
 
-            return data.Hits.Hits.Select(h => Map(h.Source)).ToList();
+                return data.Hits.Hits.Select(h => Map(h.Source)).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get latest logs from Elasticsearch");
+                return new List<ElasticLogItemDto>();
+            }
         }
 
         public async Task<int> GetErrorCountLast24hAsync()
         {
-            var url = $"{BaseUrl}/{IndexPattern}/_count";
-
-            var body = new
+            try
             {
-                query = new
+                var url = $"{BaseUrl}/{IndexPattern}/_count";
+
+                var body = new
                 {
-                    @bool = new
+                    query = new
                     {
-                        filter = new object[]
+                        @bool = new
                         {
-                            new { terms = new { level = new [] { "Error", "Fatal" } } },
-                            new { range = new Dictionary<string, object>
-                                {
-                                    ["@timestamp"] = new { gte = "now-24h" }
+                            filter = new object[]
+                            {
+                                new { terms = new { level = new [] { "Error", "Fatal" } } },
+                                new { range = new Dictionary<string, object>
+                                    {
+                                        ["@timestamp"] = new { gte = "now-24h" }
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            };
+                };
 
-            var resp = await _httpClient.PostAsJsonAsync(url, body);
-            resp.EnsureSuccessStatusCode();
+                var resp = await _httpClient.PostAsJsonAsync(url, body);
+                resp.EnsureSuccessStatusCode();
 
-            var data = await resp.Content.ReadFromJsonAsync<ElasticCountResponse>();
-            return data?.Count ?? 0;
-
+                var data = await resp.Content.ReadFromJsonAsync<ElasticCountResponse>();
+                return data?.Count ?? 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get error count from Elasticsearch");
+                return 0;
+            }
         }
 
         public async Task<List<ElasticLogItemDto>> GetLatestErrorsAsync(int size = 5)
         {
-            var url = $"{BaseUrl}/{IndexPattern}/_search";
-
-            var body = new
+            try
             {
-                size,
-                query = new
+                var url = $"{BaseUrl}/{IndexPattern}/_search";
+
+                var body = new
                 {
-                    terms = new
+                    size,
+                    query = new
                     {
-                        level = new[] { "Error", "Fatal" }
-                    }
-                },
-                sort = new object[]
-                {
-                    new Dictionary<string, object>
+                        terms = new
+                        {
+                            level = new[] { "Error", "Fatal" }
+                        }
+                    },
+                    sort = new object[]
                     {
-                        ["@timestamp"] = new { order = "desc" }
+                        new Dictionary<string, object>
+                        {
+                            ["@timestamp"] = new { order = "desc" }
+                        }
                     }
-                }
-            };
+                };
 
-            var resp = await _httpClient.PostAsJsonAsync(url, body);
-            resp.EnsureSuccessStatusCode();
+                var resp = await _httpClient.PostAsJsonAsync(url, body);
+                resp.EnsureSuccessStatusCode();
 
-            var data = await resp.Content.ReadFromJsonAsync<ElasticSearchResponse>();
-            if (data == null) return new List<ElasticLogItemDto>();
+                var data = await resp.Content.ReadFromJsonAsync<ElasticSearchResponse>();
+                if (data == null) return new List<ElasticLogItemDto>();
 
-            return data.Hits.Hits.Select(h => Map(h.Source)).ToList();
+                return data.Hits.Hits.Select(h => Map(h.Source)).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get latest errors from Elasticsearch");
+                return new List<ElasticLogItemDto>();
+            }
+        }
+
+        public async Task<ElasticLogItemDto?> GetByIdAsync(string id)
+        {
+            try
+            {
+                var url = $"{BaseUrl}/{IndexPattern}/_doc/{id}";
+
+                var resp = await _httpClient.GetAsync(url);
+                if (!resp.IsSuccessStatusCode) return null;
+
+                var json = await resp.Content.ReadFromJsonAsync<Dictionary<string, object>>();
+                if (json == null || !json.TryGetValue("_source", out var srcObj)) return null;
+
+                // ✅ DÜZELTME: Doğru deserializasyon
+                var sourceJson = System.Text.Json.JsonSerializer.Serialize(srcObj);
+                var src = System.Text.Json.JsonSerializer.Deserialize<ElasticSource>(sourceJson);
+
+                return src == null ? null : Map(src);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get log by id {LogId}", id);
+                return null;
+            }
         }
 
         private static ElasticLogItemDto Map(ElasticSource src)
@@ -153,22 +212,5 @@ namespace NotikaIdentityEmail.Services
             if (!fields.TryGetValue(key, out var v) || v == null) return null;
             return bool.TryParse(v.ToString(), out var b) ? b : null;
         }
-        public async Task<ElasticLogItemDto?> GetByIdAsync(string id)
-        {
-            var url = $"{BaseUrl}/{IndexPattern}/_doc/{id}";
-
-            var resp = await _httpClient.GetAsync(url);
-            if (!resp.IsSuccessStatusCode) return null;
-
-            var json = await resp.Content.ReadFromJsonAsync<Dictionary<string, object>>();
-            if (json == null || !json.TryGetValue("_source", out var srcObj)) return null;
-
-            var src = System.Text.Json.JsonSerializer.Deserialize<ElasticSource>(
-                srcObj.ToString()!
-            );
-
-            return src == null ? null : Map(src);
-        }
-
     }
 }

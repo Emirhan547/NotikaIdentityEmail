@@ -29,7 +29,14 @@ namespace NotikaIdentityEmail.Areas.Admin.Controllers
             _configuration = configuration;
             _elasticLogService = elasticLogService;
         }
+        // Areas/Admin/Controllers/DashboardController.cs'e ekle
 
+        [HttpGet]
+        public async Task<IActionResult> GetErrorCount()
+        {
+            var count = await _elasticLogService.GetErrorCountLast24hAsync();
+            return Json(new { count });
+        }
         public async Task<IActionResult> Index()
         {
             // 🔹 DB tarafı (senin mevcut yapı)

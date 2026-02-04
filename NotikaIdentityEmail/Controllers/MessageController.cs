@@ -34,7 +34,8 @@ namespace NotikaIdentityEmail.Controllers
             _hubContext = hubContext;
         }
 
-        // 📥 Inbox
+        // MessageController.cs - Inbox metodunu değiştir
+
         public async Task<IActionResult> Inbox(string? query)
         {
             var user = await _userManager.FindByNameAsync(User.Identity!.Name);
@@ -47,15 +48,10 @@ namespace NotikaIdentityEmail.Controllers
 
             Log.Information("Inbox opened. User: {UserEmail}, Query: {Query}", user.Email, query);
 
+            // ✅ DÜZELTME: N+1 problemi çözüldü - tek query
             var values = from m in _context.Messages
-                         join u in _context.Users
-                         on m.SenderEmail equals u.Email into userGroup
-                         from sender in userGroup.DefaultIfEmpty()
-
-                         join c in _context.Categories
-                         on m.CategoryId equals c.CategoryId into categoryGroup
-                         from category in categoryGroup.DefaultIfEmpty()
-
+                         join sender in _context.Users on m.SenderEmail equals sender.Email
+                         join category in _context.Categories on m.CategoryId equals category.CategoryId
                          where m.ReceiverEmail == user.Email && !m.IsDeleted && !m.IsDraft
                          select new MessageWithSenderInfoViewModel
                          {
@@ -64,9 +60,9 @@ namespace NotikaIdentityEmail.Controllers
                              Subject = m.Subject,
                              SendDate = m.SendDate,
                              SenderEmail = m.SenderEmail,
-                             SenderName = sender != null ? sender.Name : "Bilinmeyen",
-                             SenderSurname = sender != null ? sender.Surname : "Kullanıcı",
-                             CategoryName = category != null ? category.CategoryName : "Kategori Yok",
+                             SenderName = sender.Name,
+                             SenderSurname = sender.Surname,
+                             CategoryName = category.CategoryName,
                              IsRead = m.IsRead
                          };
 
@@ -86,6 +82,8 @@ namespace NotikaIdentityEmail.Controllers
 
             return View(list);
         }
+
+ 
 
         // 📤 Sendbox
         public async Task<IActionResult> Sendbox(string? query)

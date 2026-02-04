@@ -2,17 +2,18 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-
 using NotikaIdentityEmail.Context;
 using NotikaIdentityEmail.Entities;
 using NotikaIdentityEmail.Hubs;
 using NotikaIdentityEmail.Models;
 using NotikaIdentityEmail.Models.IdentityModels;
 using NotikaIdentityEmail.Services;
-
 using Serilog;
+using Serilog.Context;
 using Serilog.Events;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,8 +25,12 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Add services to the container.
-builder.Services.AddDbContext<EmailContext>();
+// ✅ DÜZELTME: DbContext artık connection string kullanıyor
+builder.Services.AddDbContext<EmailContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? "Server=localhost\\SQLEXPRESS;initial Catalog=NotikaEmailDb;integrated security=true;trustServerCertificate=true"
+    ));
 
 builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddEntityFrameworkStores<EmailContext>()
@@ -36,7 +41,12 @@ builder.Services.Configure<JwtSettingsModel>(builder.Configuration.GetSection("J
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddScoped<IEmailService, EmailService>();
+
+// ✅ DÜZELTME: HttpClient factory kullanımı
 builder.Services.AddHttpClient<ElasticLogService>();
+
+// ✅ YENİ: Elasticsearch index template setup
+builder.Services.AddHostedService<ElasticIndexSetupService>();
 
 builder.Services.AddSingleton<IHtmlSanitizerService, HtmlSanitizerService>();
 
@@ -71,8 +81,8 @@ builder.Services.AddAuthorization(options =>
         .RequireAuthenticatedUser()
         .Build();
 });
-builder.Services.AddSignalR();
 
+builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -87,6 +97,25 @@ app.UseSerilogRequestLogging(opts =>
         if (httpCtx.Response.StatusCode >= 400) return LogEventLevel.Warning;
         return LogEventLevel.Information;
     };
+});
+
+// ✅ YENİ: User email enrichment middleware
+app.Use(async (context, next) =>
+{
+    var userEmail = context.User?.Identity?.Name ?? context.User?.Claims
+        .FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+    if (!string.IsNullOrEmpty(userEmail))
+    {
+        using (LogContext.PushProperty("UserEmail", userEmail))
+        {
+            await next();
+        }
+    }
+    else
+    {
+        await next();
+    }
 });
 
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
@@ -112,6 +141,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
 app.MapHub<NotificationHub>("/hubs/notification");
 
 try

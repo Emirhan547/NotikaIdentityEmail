@@ -43,7 +43,9 @@ namespace NotikaIdentityEmail.Controllers
             var user = new AppUser
             {
                 UserName = model.Username,
-                Email = model.Email
+                Email = model.Email,
+                Name = model.Name,
+                Surname = model.Surname
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -69,6 +71,7 @@ namespace NotikaIdentityEmail.Controllers
 
             await _userManager.UpdateAsync(user);
 
+            // ✅ DÜZELTME: Email hatası kullanıcıya bildirilir
             try
             {
                 await _emailService.SendAsync(
@@ -76,6 +79,8 @@ namespace NotikaIdentityEmail.Controllers
                     "Notika | Hesap Aktivasyonu",
                     $"<h2>Aktivasyon Kodunuz: {activationCode}</h2>"
                 );
+
+                TempData["SuccessMessage"] = "Aktivasyon kodu e-posta adresinize gönderildi.";
             }
             catch (Exception ex)
             {
@@ -85,6 +90,10 @@ namespace NotikaIdentityEmail.Controllers
                     user.Id,
                     user.Email
                 );
+
+                TempData["WarningMessage"] =
+                    "Hesabınız oluşturuldu ancak aktivasyon e-postası gönderilemedi. " +
+                    $"Aktivasyon kodunuz: {activationCode}";
             }
 
             Log.Information(
