@@ -1,39 +1,61 @@
-﻿using MailKit.Net.Smtp;
-using Microsoft.Extensions.Options;
-using MimeKit;
+﻿using Microsoft.Extensions.Options;
+using NotikaIdentityEmail.Logging;
 using NotikaIdentityEmail.Models;
+using Serilog;
+using MimeKit;
+using MailKit.Net.Smtp;
 
 namespace NotikaIdentityEmail.Services
 {
-    public class EmailService:IEmailService
+    public class EmailService : IEmailService
     {
-        private readonly EmailSettings _settings;
+        private readonly EmailSettings _emailSettings;
 
-        public EmailService(IOptions<EmailSettings> settings)
+        public EmailService(IOptions<EmailSettings> emailSettings)
         {
-            _settings = settings.Value;
+            _emailSettings = emailSettings.Value;
         }
+
         public async Task SendAsync(string to, string subject, string body)
         {
-            var message = new MimeMessage();
+            Log.Information(LogMessages.EmailSendStarted, to, subject);
 
-            message.From.Add(new MailboxAddress(
-                _settings.SenderName,
-                _settings.SenderEmail));
-
-            message.To.Add(MailboxAddress.Parse(to));
-            message.Subject = subject;
-
-            message.Body = new TextPart("plain")
+            try
             {
-                Text = body
-            };
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress(
+                    _emailSettings.SenderName,
+                    _emailSettings.SenderEmail));
 
-            using var client = new SmtpClient();
-            await client.ConnectAsync(_settings.Host, _settings.Port, MailKit.Security.SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync(_settings.Username, _settings.Password);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
+                message.To.Add(MailboxAddress.Parse(to));
+                message.Subject = subject;
+
+                message.Body = new BodyBuilder
+                {
+                    HtmlBody = body
+                }.ToMessageBody();
+
+                using var client = new SmtpClient();
+
+                await client.ConnectAsync(
+                    _emailSettings.SmtpServer,
+                    _emailSettings.SmtpPort,
+                    _emailSettings.UseSsl);
+
+                await client.AuthenticateAsync(
+                    _emailSettings.Username,
+                    _emailSettings.Password);
+
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+
+                Log.Information(LogMessages.EmailSendSucceeded, to);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, LogMessages.EmailSendFailed, to);
+                throw;
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -6,29 +6,40 @@ using Microsoft.IdentityModel.Tokens;
 
 using NotikaIdentityEmail.Context;
 using NotikaIdentityEmail.Entities;
+using NotikaIdentityEmail.Hubs;
 using NotikaIdentityEmail.Models;
 using NotikaIdentityEmail.Models.IdentityModels;
 using NotikaIdentityEmail.Services;
+
+using Serilog;
+using Serilog.Events;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container. 
+// ✅ Serilog bootstrapping
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
 
+builder.Host.UseSerilog();
+
+// Add services to the container.
 builder.Services.AddDbContext<EmailContext>();
+
 builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddEntityFrameworkStores<EmailContext>()
     .AddErrorDescriber<CustomIdentityValidator>()
     .AddTokenProvider<DataProtectorTokenProvider<AppUser>>(TokenOptions.DefaultProvider);
 
-// JWT Ayarlar�
 builder.Services.Configure<JwtSettingsModel>(builder.Configuration.GetSection("JwtSettingsKey"));
-builder.Services.Configure<EmailSettings>(
-    builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddHttpClient<ElasticLogService>();
+
 builder.Services.AddSingleton<IHtmlSanitizerService, HtmlSanitizerService>();
-// Cookie + JWT birlikte authentication
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -48,7 +59,7 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings.Issuer,
+        ValidIssuer = jwtSettings!.Issuer,
         ValidAudience = jwtSettings.Audience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
     };
@@ -60,16 +71,29 @@ builder.Services.AddAuthorization(options =>
         .RequireAuthenticatedUser()
         .Build();
 });
+builder.Services.AddSignalR();
 
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+// ✅ Global request logging (HTTP)
+app.UseSerilogRequestLogging(opts =>
+{
+    opts.GetLevel = (httpCtx, elapsedMs, ex) =>
+    {
+        if (ex != null) return LogEventLevel.Error;
+        if (httpCtx.Response.StatusCode >= 500) return LogEventLevel.Error;
+        if (httpCtx.Response.StatusCode >= 400) return LogEventLevel.Warning;
+        return LogEventLevel.Information;
+    };
+});
+
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
-// Configure the HTTP request pipeline.
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -80,7 +104,6 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
-
 app.MapControllerRoute(
  name: "areas",
  pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
@@ -89,6 +112,18 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+app.MapHub<NotificationHub>("/hubs/notification");
 
-
-app.Run();
+try
+{
+    Log.Information("Application starting up");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

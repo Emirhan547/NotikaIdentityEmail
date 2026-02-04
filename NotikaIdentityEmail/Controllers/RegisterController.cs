@@ -1,13 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NotikaIdentityEmail.Entities;
+using NotikaIdentityEmail.Logging;
 using NotikaIdentityEmail.Models;
+using NotikaIdentityEmail.Models.IdentityModels;
 using NotikaIdentityEmail.Services;
+using Serilog;
 
 namespace NotikaIdentityEmail.Controllers
 {
-    [AllowAnonymous]
     public class RegisterController : Controller
     {
         private readonly UserManager<AppUser> _userManager;
@@ -22,47 +23,77 @@ namespace NotikaIdentityEmail.Controllers
         }
 
         [HttpGet]
-        public IActionResult CreateUser()
+        public IActionResult Index()
         {
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateUser(RegisterViewModel model)
+        public async Task<IActionResult> Index(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
-            int code = Random.Shared.Next(100000, 999999);
+            Log.Information(
+                LogMessages.UserRegisterStarted,
+                model.Email,
+                model.Username
+            );
 
-            var appUser = new AppUser
+            var user = new AppUser
             {
-                Name = model.Name,
-                Surname = model.Surname,
-                Email = model.Email,
                 UserName = model.Username,
-                ActivationCode = code,
-                EmailConfirmed = false
+                Email = model.Email
             };
 
-            var result = await _userManager.CreateAsync(appUser, model.Password);
+            var result = await _userManager.CreateAsync(user, model.Password);
 
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                await _emailService.SendAsync(
+                var errors = string.Join(" | ", result.Errors.Select(e => e.Description));
+
+                Log.Warning(
+                    LogMessages.UserRegisterFailed,
                     model.Email,
-                    "Notika Identity Aktivasyon Kodu",
-                    $"Hesabınızı doğrulamak için kodunuz: {code}"
+                    errors
                 );
 
-                TempData["Email"] = model.Email;
-                return RedirectToAction("UserActivation", "Activation");
+                foreach (var error in result.Errors)
+                    ModelState.AddModelError("", error.Description);
+
+                return View(model);
             }
 
-            foreach (var error in result.Errors)
-                ModelState.AddModelError("", error.Description);
+            var activationCode = new Random().Next(100000, 999999);
+            user.ActivationCode = activationCode;
 
-            return View(model);
+            await _userManager.UpdateAsync(user);
+
+            try
+            {
+                await _emailService.SendAsync(
+                    user.Email!,
+                    "Notika | Hesap Aktivasyonu",
+                    $"<h2>Aktivasyon Kodunuz: {activationCode}</h2>"
+                );
+            }
+            catch (Exception ex)
+            {
+                Log.Error(
+                    ex,
+                    "Activation email failed after user creation. UserId: {UserId}, Email: {Email}",
+                    user.Id,
+                    user.Email
+                );
+            }
+
+            Log.Information(
+                LogMessages.UserRegisterSucceeded,
+                user.Id,
+                user.Email
+            );
+
+            return RedirectToAction("Index", "Activation");
         }
     }
 }

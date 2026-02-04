@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using NotikaIdentityEmail.Areas.Admin.Models;
 using NotikaIdentityEmail.Context;
 using NotikaIdentityEmail.Entities;
+using NotikaIdentityEmail.Services;
 
 namespace NotikaIdentityEmail.Areas.Admin.Controllers
 {
@@ -15,16 +16,23 @@ namespace NotikaIdentityEmail.Areas.Admin.Controllers
         private readonly EmailContext _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly ElasticLogService _elasticLogService;
 
-        public DashboardController(EmailContext context, UserManager<AppUser> userManager, IConfiguration configuration)
+        public DashboardController(
+            EmailContext context,
+            UserManager<AppUser> userManager,
+            IConfiguration configuration,
+            ElasticLogService elasticLogService)
         {
             _context = context;
             _userManager = userManager;
             _configuration = configuration;
+            _elasticLogService = elasticLogService;
         }
 
         public async Task<IActionResult> Index()
         {
+            // 🔹 DB tarafı (senin mevcut yapı)
             var recentMessages = await _context.Messages
                 .Include(x => x.Category)
                 .OrderByDescending(x => x.SendDate)
@@ -51,6 +59,10 @@ namespace NotikaIdentityEmail.Areas.Admin.Controllers
                 .Take(6)
                 .ToListAsync();
 
+            // 🔹 Elasticsearch tarafı
+            var latestLogs = await _elasticLogService.GetLatestAsync(10);
+            var errorCountLast24h = await _elasticLogService.GetErrorCountLast24hAsync();
+
             var model = new DashboardViewModel
             {
                 CategoryCount = await _context.Categories.CountAsync(),
@@ -61,12 +73,18 @@ namespace NotikaIdentityEmail.Areas.Admin.Controllers
                 NotificationCount = await _context.Notifications.CountAsync(),
                 CommentCount = await _context.Comments.CountAsync(),
                 UserCount = await _userManager.Users.CountAsync(),
+
                 RecentMessages = recentMessages,
                 CategoryStats = categoryStats,
-                ElasticsearchUrl = _configuration["ElasticSearch:Url"],
+
+                // 🔥 Elastic bilgiler
+                LatestElasticLogs = latestLogs,
+                ErrorCountLast24h = errorCountLast24h,
+
+                ElasticsearchUrl = _configuration["Elastic:BaseUrl"],
                 KibanaUrl = _configuration["Kibana:Url"],
                 SerilogMinimumLevel = _configuration["Serilog:MinimumLevel:Default"],
-                ElasticsearchEnabled = !string.IsNullOrWhiteSpace(_configuration["ElasticSearch:Url"]),
+                ElasticsearchEnabled = !string.IsNullOrWhiteSpace(_configuration["Elastic:BaseUrl"]),
                 KibanaEnabled = !string.IsNullOrWhiteSpace(_configuration["Kibana:Url"])
             };
 

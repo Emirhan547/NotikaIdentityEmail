@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NotikaIdentityEmail.Entities;
+using NotikaIdentityEmail.Logging;
+using NotikaIdentityEmail.Models;
+using NotikaIdentityEmail.Models.IdentityModels;
+using Serilog;
 
 namespace NotikaIdentityEmail.Controllers
 {
-    [AllowAnonymous]
     public class ActivationController : Controller
     {
         private readonly UserManager<AppUser> _userManager;
@@ -14,55 +16,62 @@ namespace NotikaIdentityEmail.Controllers
         {
             _userManager = userManager;
         }
-        public IActionResult Index ()
-        {
-            return View();
-        }
-        [HttpGet]
-        public IActionResult UserActivation()
-        {
-            if (!TempData.ContainsKey("Email"))
-                return RedirectToAction("CreateUser", "Register");
 
-            TempData.Keep("Email"); 
+        [HttpGet]
+        public IActionResult Index()
+        {
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> UserActivation(int userCodeParameter)
+        public async Task<IActionResult> Index(ActivationViewModel model)
         {
-            var email = TempData["Email"]?.ToString();
-
-            if (string.IsNullOrWhiteSpace(email))
+            if (!ModelState.IsValid)
             {
-                ModelState.AddModelError("", "Oturum süresi doldu. Lütfen tekrar kayıt olun.");
-                return View();
+                return View(model);
             }
 
-            var user = await _userManager.FindByEmailAsync(email);
+            Log.Information(
+                LogMessages.ActivationStarted,
+                model.Email,
+                model.Code
+            );
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
 
             if (user == null)
             {
-                ModelState.AddModelError("", "Kullanıcı bulunamadı.");
-                return View();
+                Log.Warning(
+                    LogMessages.ActivationFailedUserNotFound,
+                    model.Email
+                );
+
+                ModelState.AddModelError("", "Kullanıcı bulunamadı");
+                return View(model);
             }
 
-            if (user.EmailConfirmed)
+            if (user.ActivationCode != model.Code)
             {
-                return RedirectToAction("UserLogin", "Login");
-            }
+                Log.Warning(
+                    LogMessages.ActivationFailedWrongCode,
+                    model.Email
+                );
 
-            if (user.ActivationCode != userCodeParameter)
-            {
-                TempData.Keep("Email"); 
-                ModelState.AddModelError("", "Aktivasyon kodu hatalı.");
-                return View();
+                ModelState.AddModelError("", "Aktivasyon kodu hatalı");
+                return View(model);
             }
 
             user.EmailConfirmed = true;
+            user.ActivationCode = null;
+
             await _userManager.UpdateAsync(user);
 
-            TempData.Remove("Email");
+            Log.Information(
+                LogMessages.ActivationSucceeded,
+                user.Id,
+                user.Email
+            );
+
             return RedirectToAction("UserLogin", "Login");
         }
     }

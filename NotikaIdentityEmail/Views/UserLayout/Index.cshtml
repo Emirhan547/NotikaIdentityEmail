@@ -1,31 +1,88 @@
 ﻿<!doctype html>
-<html class="no-js" lang="">
-
-    @await Component.InvokeAsync("_UILayoutHead")
-
+<html class="no-js" lang="tr">
+@await Component.InvokeAsync("_UILayoutHead")
 <body>
-    <!--[if lt IE 8]>
-            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-        <![endif]-->
-    <!-- Start Header Top Area -->
+
     @await Component.InvokeAsync("_UILayoutHeader")
-    <!-- End Header Top Area -->
-    <!-- Mobile Menu start -->
     @await Component.InvokeAsync("_UILayoutMobileMenu")
-    <!-- Mobile Menu end -->
-    <!-- Main Menu area start-->
     @await Component.InvokeAsync("_UILayoutNavbar")
-    <!-- Main Menu area End-->
-    <!-- Breadcomb area Start-->
     @await Component.InvokeAsync("_UILayoutBreadComb")
-    <!-- Breadcomb area End-->
-    <!-- Inbox area Start-->
+
     @RenderBody()
-    <!-- Inbox area End-->
-    <!-- Start Footer area-->
 
-    <!-- End Footer area-->
- @await Component.InvokeAsync("_UILayoutFooter")
+    @using System.Security.Claims
+    <input type="hidden"
+           id="currentUserEmail"
+           value="@(User.FindFirst(ClaimTypes.Email)?.Value
+                           ?? User.FindFirst("email")?.Value
+                           ?? "")" />
+
+    @await Component.InvokeAsync("_UILayoutFooter")
+
+    <!-- JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.2/signalr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        (function () {
+
+            const emailEl = document.getElementById("currentUserEmail");
+            const userEmail = (emailEl?.value || "").trim();
+
+            if (!userEmail) {
+                console.warn("SignalR: userEmail not found.");
+                return;
+            }
+
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/hubs/notification")
+                .withAutomaticReconnect()
+                .build();
+
+            function showInboxBadgePlusOne() {
+                const badge = document.getElementById("inboxBadge");
+                if (!badge) return;
+
+                const current = parseInt(badge.textContent || "0", 10) || 0;
+                badge.textContent = (current + 1).toString();
+                badge.style.display = "inline-block";
+            }
+
+            connection.start()
+                .then(() => connection.invoke("JoinUserGroup", userEmail))
+                .then(() => console.log("SignalR connected:", userEmail))
+                .catch(err => console.error("SignalR error:", err));
+
+            // 📩 Yeni mesaj
+            connection.on("NewMessage", function (data) {
+                showInboxBadgePlusOne();
+
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: 'Yeni Mesaj',
+                    text: data.subject + ' (' + data.senderEmail + ')',
+                    showConfirmButton: false,
+                    timer: 3500
+                });
+            });
+
+            // ✅ Mesaj okundu
+            connection.on("MessageRead", function (data) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Mesaj Okundu',
+                    text: data.subject + ' okundu',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            });
+
+        })();
+    </script>
+
 </body>
-
 </html>
