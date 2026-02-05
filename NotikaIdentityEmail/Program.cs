@@ -11,24 +11,16 @@ using NotikaIdentityEmail.Logging;
 using NotikaIdentityEmail.Models;
 using NotikaIdentityEmail.Models.IdentityModels;
 using NotikaIdentityEmail.Services;
-using Serilog;
-using Serilog.Context;
-using Serilog.Events;
+
 using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ Serilog bootstrapping
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.With<SeverityEnricher>()
-    .Filter.ByExcluding(LogFilter.ShouldExclude)
-    .CreateLogger();
 
-builder.Host.UseSerilog();
+builder.Logging.ClearProviders();
+builder.Services.AddSingleton<ILoggerProvider, ElasticLoggerProvider>();
 
-// ✅ DÜZELTME: DbContext artık connection string kullanıyor
 builder.Services.AddDbContext<EmailContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
@@ -100,7 +92,8 @@ app.Use(async (context, next) =>
 
     if (!string.IsNullOrEmpty(userEmail))
     {
-        using (LogContext.PushProperty("UserEmail", userEmail))
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        using (logger.BeginScope(new Dictionary<string, object?> { ["UserEmail"] = userEmail }))
         {
             await next();
         }
@@ -139,18 +132,26 @@ app.MapHub<NotificationHub>("/hubs/notification");
 
 try
 {
-    Log.ForContext("OperationType", LogContextValues.OperationSystem)
-        .Information(SystemLogMessages.SystemStarted);
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    using (logger.BeginScope(new Dictionary<string, object?> { ["OperationType"] = LogContextValues.OperationSystem }))
+    {
+        logger.LogInformation(SystemLogMessages.SystemStarted);
+    }
     app.Run();
 }
 catch (Exception ex)
 {
-    Log.ForContext("OperationType", LogContextValues.OperationSystem)
-        .Fatal(ex, LogMessages.UnexpectedError);
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    using (logger.BeginScope(new Dictionary<string, object?> { ["OperationType"] = LogContextValues.OperationSystem }))
+    {
+        logger.LogCritical(ex, LogMessages.UnexpectedError);
+    }
 }
 finally
 {
-    Log.ForContext("OperationType", LogContextValues.OperationSystem)
-        .Information(SystemLogMessages.SystemStopped);
-    Log.CloseAndFlush();
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    using (logger.BeginScope(new Dictionary<string, object?> { ["OperationType"] = LogContextValues.OperationSystem }))
+    {
+        logger.LogInformation(SystemLogMessages.SystemStopped);
+    }
 }

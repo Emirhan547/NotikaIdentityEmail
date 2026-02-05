@@ -26,7 +26,6 @@ namespace NotikaIdentityEmail.Areas.Admin.Models
         // 🔧 Sistem / Konfig
         public string? ElasticsearchUrl { get; set; }
         public string? KibanaUrl { get; set; }
-        public string? SerilogMinimumLevel { get; set; }
 
         public bool ElasticsearchEnabled { get; set; }
         public bool KibanaEnabled { get; set; }

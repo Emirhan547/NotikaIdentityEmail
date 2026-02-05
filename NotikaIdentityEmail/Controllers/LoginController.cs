@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using NotikaIdentityEmail.Entities;
 using NotikaIdentityEmail.Logging;
 using NotikaIdentityEmail.Models;
-using NotikaIdentityEmail.Models.IdentityModels;
-using Serilog;
 
 namespace NotikaIdentityEmail.Controllers
 {
@@ -14,13 +12,15 @@ namespace NotikaIdentityEmail.Controllers
     {
         private readonly SignInManager<AppUser> _signInManager;
         private readonly UserManager<AppUser> _userManager;
-
+        private readonly ILogger<LoginController> _logger;
         public LoginController(
             SignInManager<AppUser> signInManager,
-            UserManager<AppUser> userManager)
+           UserManager<AppUser> userManager,
+            ILogger<LoginController> logger)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _logger = logger;
         }
 
         // 🔐 LOGIN GET
@@ -45,8 +45,10 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationAuth)
-                    .Warning(AuthLogMessages.UserLoginFailed);
+                using (_logger.BeginScope(BuildAuthScope()))
+                {
+                    _logger.LogWarning(AuthLogMessages.UserLoginFailed);
+                }
 
                 ModelState.AddModelError("", "Kullanıcı adı veya şifre hatalı");
                 return View(model);
@@ -54,9 +56,10 @@ namespace NotikaIdentityEmail.Controllers
 
             if (!user.EmailConfirmed)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationAuth)
-                     .ForContext("UserEmail", user.Email)
-                     .Warning(AuthLogMessages.UserLoginFailed);
+                using (_logger.BeginScope(BuildAuthScope(user.Email)))
+                {
+                    _logger.LogWarning(AuthLogMessages.UserLoginFailed);
+                }
 
                 ModelState.AddModelError("", "Email adresiniz doğrulanmamış");
                 return View(model);
@@ -71,17 +74,19 @@ namespace NotikaIdentityEmail.Controllers
 
             if (!result.Succeeded)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationAuth)
-                    .ForContext("UserEmail", user.Email)
-                    .Warning(AuthLogMessages.UserLoginFailed);
+                using (_logger.BeginScope(BuildAuthScope(user.Email)))
+                {
+                    _logger.LogWarning(AuthLogMessages.UserLoginFailed);
+                }
 
                 ModelState.AddModelError("", "Kullanıcı adı veya şifre hatalı");
                 return View(model);
             }
 
-            Log.ForContext("OperationType", LogContextValues.OperationAuth)
-                .ForContext("UserEmail", user.Email)
-                .Information(AuthLogMessages.UserLoginSuccess);
+            using (_logger.BeginScope(BuildAuthScope(user.Email)))
+            {
+                _logger.LogInformation(AuthLogMessages.UserLoginSuccess);
+            }
 
             // 🎯 ROLE BASED REDIRECT
             if (await _userManager.IsInRoleAsync(user, "Admin"))
@@ -95,9 +100,10 @@ namespace NotikaIdentityEmail.Controllers
             }
 
             // ⚠️ Rolü olmayan kullanıcı
-            Log.ForContext("OperationType", LogContextValues.OperationAuth)
-                .ForContext("UserEmail", user.Email)
-                .Warning(LogMessages.UserRoleMissing);
+            using (_logger.BeginScope(BuildAuthScope(user.Email)))
+            {
+                _logger.LogWarning(LogMessages.UserRoleMissing);
+            }
             await _signInManager.SignOutAsync();
             ModelState.AddModelError("", "Kullanıcı rolü tanımlı değil");
             return View(model);
@@ -110,15 +116,38 @@ namespace NotikaIdentityEmail.Controllers
 
             await _signInManager.SignOutAsync();
 
-            var log = Log.ForContext("OperationType", LogContextValues.OperationAuth);
             if (!string.IsNullOrWhiteSpace(username))
             {
-                log = log.ForContext("UserEmail", username);
+                using (_logger.BeginScope(BuildAuthScope(username)))
+                {
+                    _logger.LogInformation(AuthLogMessages.UserLogout);
+                }
+            }
+            else
+            {
+                using (_logger.BeginScope(BuildAuthScope()))
+                {
+                    _logger.LogInformation(AuthLogMessages.UserLogout);
+                }
             }
 
-            log.Information(AuthLogMessages.UserLogout);
+           
 
             return RedirectToAction("UserLogin");
+        }
+        private static Dictionary<string, object?> BuildAuthScope(string? userEmail = null)
+        {
+            var scope = new Dictionary<string, object?>
+            {
+                ["OperationType"] = LogContextValues.OperationAuth
+            };
+
+            if (!string.IsNullOrWhiteSpace(userEmail))
+            {
+                scope["UserEmail"] = userEmail;
+            }
+
+            return scope;
         }
     }
 }

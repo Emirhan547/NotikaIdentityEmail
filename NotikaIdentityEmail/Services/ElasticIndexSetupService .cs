@@ -22,7 +22,7 @@ namespace NotikaIdentityEmail.Services
             var baseUrl = _configuration["Elastic:BaseUrl"];
             if (string.IsNullOrEmpty(baseUrl))
             {
-                _logger.LogWarning("Elasticsearch BaseUrl not configured, skipping index template setup");
+                _logger.LogWarning("Elasticsearch BaseUrl yapılandırılmadığı için index şablonu kurulumu atlandı");
                 return;
             }
 
@@ -44,13 +44,13 @@ namespace NotikaIdentityEmail.Services
                         },
                         mappings = new
                         {
-                            properties = new
+                            properties = new Dictionary<string, object>
                             {
-                                timestamp = new { type = "date" },
-                                level = new { type = "keyword" },
-                                messageTemplate = new { type = "text" },
-                                renderedMessage = new { type = "text" },
-                                fields = new
+                                ["@timestamp"] = new { type = "date" },
+                                ["level"] = new { type = "keyword" },
+                                ["messageTemplate"] = new { type = "text" },
+                                ["renderedMessage"] = new { type = "text" },
+                                ["fields"] = new
                                 {
                                     properties = new
                                     {
@@ -71,16 +71,16 @@ namespace NotikaIdentityEmail.Services
 
                 if (response.IsSuccessStatusCode)
                 {
-                    _logger.LogInformation("✅ Elasticsearch index template created successfully");
+                    _logger.LogInformation("✅ Elasticsearch index şablonu başarıyla oluşturuldu");
                 }
                 else
                 {
-                    _logger.LogWarning("Failed to create Elasticsearch template. Status: {StatusCode}", response.StatusCode);
+                    _logger.LogWarning("Elasticsearch şablonu oluşturulamadı. Durum: {StatusCode}", response.StatusCode);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to create Elasticsearch template (non-critical)");
+                _logger.LogWarning(ex, "Elasticsearch şablonu oluşturulamadı (kritik değil)");
             }
         }
 

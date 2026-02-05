@@ -11,8 +11,6 @@ using NotikaIdentityEmail.Services;
 using Microsoft.AspNetCore.SignalR;
 using NotikaIdentityEmail.Hubs;
 
-using Serilog;
-using ILogger = Serilog.ILogger;
 
 namespace NotikaIdentityEmail.Controllers
 {
@@ -23,16 +21,19 @@ namespace NotikaIdentityEmail.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly IHtmlSanitizerService _htmlSanitizer;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly ILogger<MessageController> _logger;
         public MessageController(
             EmailContext context,
             UserManager<AppUser> userManager,
             IHtmlSanitizerService htmlSanitizer,
-            IHubContext<NotificationHub> hubContext)
+           IHubContext<NotificationHub> hubContext,
+            ILogger<MessageController> logger)
         {
             _context = context;
             _userManager = userManager;
             _htmlSanitizer = htmlSanitizer;
             _hubContext = hubContext;
+            _logger = logger;
         }
 
         // MessageController.cs - Inbox metodunu değiştir
@@ -43,8 +44,10 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                     .Warning(LogMessages.UserNotFound);
+                using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage)))
+                {
+                    _logger.LogWarning(LogMessages.UserNotFound);
+                }
                 return Unauthorized();
             }
 
@@ -94,8 +97,10 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                    .Warning(LogMessages.UserNotFound);
+                using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage)))
+                {
+                    _logger.LogWarning(LogMessages.UserNotFound);
+                }
                 return Unauthorized();
             }
 
@@ -146,24 +151,30 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                                    .Warning(LogMessages.UserNotFound);
+                using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage)))
+                {
+                    _logger.LogWarning(LogMessages.UserNotFound);
+                }
                 return Unauthorized();
             }
 
             var value = await _context.Messages.FirstOrDefaultAsync(x => x.MessageId == id && !x.IsDeleted);
             if (value == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                                    .Warning(LogMessages.MessageNotFound);
+                using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage, user.Email)))
+                {
+                    _logger.LogWarning(LogMessages.MessageNotFound);
+                }
                 return NotFound();
             }
 
             // Yetki kontrolü (message sadece sender/receiver tarafından görülmeli)
             if (value.SenderEmail != user.Email && value.ReceiverEmail != user.Email)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                     .Warning(LogMessages.AccessForbidden);
+                using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage, user.Email)))
+                {
+                    _logger.LogWarning(LogMessages.AccessForbidden);
+                }
                 return Forbid();
             }
 
@@ -183,8 +194,10 @@ namespace NotikaIdentityEmail.Controllers
                     });
 
                 var categoryName = await GetCategoryNameAsync(value.CategoryId);
-                var logger = CreateMessageLogger(value.SenderEmail, value.ReceiverEmail, categoryName, LogContextValues.MessageStatusRead);
-                logger.Information(MessageLogMessages.MessageRead);
+                using (BeginMessageScope(value.SenderEmail, value.ReceiverEmail, categoryName, LogContextValues.MessageStatusRead))
+                {
+                    _logger.LogInformation(MessageLogMessages.MessageRead);
+                }
             }
 
 
@@ -210,8 +223,11 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                                    .Warning(LogMessages.UserNotFound); return Unauthorized();
+                using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage)))
+                {
+                    _logger.LogWarning(LogMessages.UserNotFound);
+                }
+                return Unauthorized();
             }
 
             var isDraft = string.Equals(action, "draft", StringComparison.OrdinalIgnoreCase);
@@ -225,8 +241,10 @@ namespace NotikaIdentityEmail.Controllers
                 {
                     ModelState.AddModelError(nameof(model.ReceiverEmail), "Alıcı email adresi sistemde bulunamadı.");
 
-                    Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                        .Warning(LogMessages.UserNotFound);
+                    using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage, user.Email)))
+                    {
+                        _logger.LogWarning(LogMessages.UserNotFound);
+                    }
                 }
             }
 
@@ -255,8 +273,11 @@ namespace NotikaIdentityEmail.Controllers
 
             var categoryName = await GetCategoryNameAsync(message.CategoryId);
             var status = GetMessageStatus(message);
-            var logger = CreateMessageLogger(message.SenderEmail, message.ReceiverEmail, categoryName, status);
-            logger.Information(message.IsDraft ? MessageLogMessages.MessageDraftSaved : MessageLogMessages.MessageSent);            // 🔔 Draft değilse alıcıya realtime bildirim
+            using (BeginMessageScope(message.SenderEmail, message.ReceiverEmail, categoryName, status))
+            {
+                _logger.LogInformation(message.IsDraft ? MessageLogMessages.MessageDraftSaved : MessageLogMessages.MessageSent);
+            }
+                 
             if (!message.IsDraft)
             {
                 await _hubContext.Clients
@@ -284,8 +305,11 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                                    .Warning(LogMessages.UserNotFound); return Unauthorized();
+                using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage)))
+                {
+                    _logger.LogWarning(LogMessages.UserNotFound);
+                }
+                return Unauthorized();
             }
 
 
@@ -323,8 +347,11 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                                   .Warning(LogMessages.UserNotFound); return Unauthorized();
+                using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage)))
+                {
+                    _logger.LogWarning(LogMessages.UserNotFound);
+                }
+                return Unauthorized();
             }
 
 
@@ -373,8 +400,11 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                                    .Warning(LogMessages.UserNotFound); return Unauthorized();
+                using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage)))
+                {
+                    _logger.LogWarning(LogMessages.UserNotFound);
+                }
+                return Unauthorized();
             }
 
 
@@ -417,8 +447,10 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                    .Warning(LogMessages.UserNotFound);
+                using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage)))
+                {
+                    _logger.LogWarning(LogMessages.UserNotFound);
+                }
                 return Unauthorized();
             }
 
@@ -427,8 +459,10 @@ namespace NotikaIdentityEmail.Controllers
 
             if (message == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                   .Warning(LogMessages.MessageNotFound);
+                using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage, user.Email)))
+                {
+                    _logger.LogWarning(LogMessages.MessageNotFound);
+                }
                 return NotFound();
             }
 
@@ -451,8 +485,11 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                                    .Warning(LogMessages.UserNotFound); return Unauthorized();
+                using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage)))
+                {
+                    _logger.LogWarning(LogMessages.UserNotFound);
+                }
+                return Unauthorized();
             }
 
             var message = await _context.Messages.FirstOrDefaultAsync(x =>
@@ -462,8 +499,11 @@ namespace NotikaIdentityEmail.Controllers
 
             if (message == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                                    .Warning(LogMessages.MessageNotFound); return NotFound();
+                using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage, user.Email)))
+                {
+                    _logger.LogWarning(LogMessages.MessageNotFound);
+                }
+                return NotFound();
             }
 
             LoadCategories();
@@ -485,8 +525,11 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                                   .Warning(LogMessages.UserNotFound); return Unauthorized();
+                using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage)))
+                {
+                    _logger.LogWarning(LogMessages.UserNotFound);
+                }
+                return Unauthorized();
             }
 
             var message = await _context.Messages.FirstOrDefaultAsync(x =>
@@ -496,8 +539,11 @@ namespace NotikaIdentityEmail.Controllers
 
             if (message == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                                    .Warning(LogMessages.MessageNotFound); return NotFound();
+                using (_logger.BeginScope(BuildOperationScope(LogContextValues.OperationMessage, user.Email)))
+                {
+                    _logger.LogWarning(LogMessages.MessageNotFound);
+                }
+                return NotFound();
             }
 
             message.IsDeleted = true;
@@ -505,8 +551,10 @@ namespace NotikaIdentityEmail.Controllers
             await _context.SaveChangesAsync();
 
             var categoryName = await GetCategoryNameAsync(message.CategoryId);
-            var logger = CreateMessageLogger(message.SenderEmail, message.ReceiverEmail, categoryName, LogContextValues.MessageStatusTrash);
-            logger.Information(MessageLogMessages.MessageMovedToTrash);
+            using (BeginMessageScope(message.SenderEmail, message.ReceiverEmail, categoryName, LogContextValues.MessageStatusTrash))
+            {
+                _logger.LogInformation(MessageLogMessages.MessageMovedToTrash);
+            }
 
             return RedirectToAction(returnAction);
         }
@@ -520,13 +568,18 @@ namespace NotikaIdentityEmail.Controllers
                 Value = c.CategoryId.ToString()
             });
         }
-        private ILogger CreateMessageLogger(string senderEmail, string receiverEmail, string? categoryName, string messageStatus)
+        private IDisposable BeginMessageScope(string senderEmail, string receiverEmail, string? categoryName, string messageStatus)
         {
-            return Log.ForContext("OperationType", LogContextValues.OperationMessage)
-                .ForContext("SenderEmail", senderEmail)
-                .ForContext("ReceiverEmail", receiverEmail)
-                .ForContext("Category", categoryName ?? LogContextValues.CategoryFallback)
-                .ForContext("MessageStatus", messageStatus);
+            var scope = new Dictionary<string, object?>
+            {
+                ["OperationType"] = LogContextValues.OperationMessage,
+                ["SenderEmail"] = senderEmail,
+                ["ReceiverEmail"] = receiverEmail,
+                ["Category"] = categoryName ?? LogContextValues.CategoryFallback,
+                ["MessageStatus"] = messageStatus
+            };
+
+            return _logger.BeginScope(scope);
         }
 
         private static string GetMessageStatus(Message message)
@@ -550,6 +603,20 @@ namespace NotikaIdentityEmail.Controllers
                 .Where(category => category.CategoryId == categoryId)
                 .Select(category => category.CategoryName)
                 .FirstOrDefaultAsync();
+        }
+        private static Dictionary<string, object?> BuildOperationScope(string operationType, string? userEmail = null)
+        {
+            var scope = new Dictionary<string, object?>
+            {
+                ["OperationType"] = operationType
+            };
+
+            if (!string.IsNullOrWhiteSpace(userEmail))
+            {
+                scope["UserEmail"] = userEmail;
+            }
+
+            return scope;
         }
     }
 }

@@ -18,11 +18,11 @@ namespace NotikaIdentityEmail.Services
             // Validate configuration
             if (string.IsNullOrWhiteSpace(BaseUrl))
             {
-                throw new InvalidOperationException("Elastic:BaseUrl configuration is missing");
+                throw new InvalidOperationException("Elastic:BaseUrl yapılandırması eksik");
             }
             if (string.IsNullOrWhiteSpace(IndexPattern))
             {
-                throw new InvalidOperationException("Elastic:IndexPattern configuration is missing");
+                throw new InvalidOperationException("Elastic:IndexPattern yapılandırması eksik");
             }
         }
 
@@ -57,7 +57,7 @@ namespace NotikaIdentityEmail.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get latest logs from Elasticsearch");
+                _logger.LogError(ex, "Elasticsearch üzerinden son loglar alınamadı");
                 return new List<ElasticLogItemDto>();
             }
         }
@@ -95,7 +95,7 @@ namespace NotikaIdentityEmail.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get error count from Elasticsearch");
+                _logger.LogError(ex, "Elasticsearch üzerinden hata sayısı alınamadı");
                 return 0;
             }
         }
@@ -135,7 +135,7 @@ namespace NotikaIdentityEmail.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get latest errors from Elasticsearch");
+                _logger.LogError(ex, "Elasticsearch üzerinden son hatalar alınamadı");
                 return new List<ElasticLogItemDto>();
             }
         }
@@ -160,7 +160,7 @@ namespace NotikaIdentityEmail.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get log by id {LogId}", id);
+                _logger.LogError(ex, "{LogId} kimlikli log alınamadı", id);
                 return null;
             }
         }

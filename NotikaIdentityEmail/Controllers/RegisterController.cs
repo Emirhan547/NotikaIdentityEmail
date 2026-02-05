@@ -5,7 +5,7 @@ using NotikaIdentityEmail.Logging;
 using NotikaIdentityEmail.Models;
 using NotikaIdentityEmail.Models.IdentityModels;
 using NotikaIdentityEmail.Services;
-using Serilog;
+
 
 namespace NotikaIdentityEmail.Controllers
 {
@@ -13,13 +13,15 @@ namespace NotikaIdentityEmail.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly IEmailService _emailService;
-
+        private readonly ILogger<RegisterController> _logger;
         public RegisterController(
             UserManager<AppUser> userManager,
-            IEmailService emailService)
+           IEmailService emailService,
+            ILogger<RegisterController> logger)
         {
             _userManager = userManager;
             _emailService = emailService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -48,9 +50,10 @@ namespace NotikaIdentityEmail.Controllers
 
             if (!result.Succeeded)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationUser)
-                     .ForContext("UserEmail", model.Email)
-                     .Warning(UserLogMessages.UserCreateFailed);
+                using (_logger.BeginScope(BuildUserScope(LogContextValues.OperationUser, model.Email)))
+                {
+                    _logger.LogWarning(UserLogMessages.UserCreateFailed);
+                }
 
                 foreach (var error in result.Errors)
                     ModelState.AddModelError("", error.Description);
@@ -76,20 +79,36 @@ namespace NotikaIdentityEmail.Controllers
             }
             catch (Exception ex)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationSystem)
-                     .ForContext("UserEmail", user.Email)
-                     .Error(ex, LogMessages.ActivationEmailFailed);
+                using (_logger.BeginScope(BuildUserScope(LogContextValues.OperationSystem, user.Email)))
+                {
+                    _logger.LogError(ex, LogMessages.ActivationEmailFailed);
+                }
 
                 TempData["WarningMessage"] =
                     "Hesabınız oluşturuldu ancak aktivasyon e-postası gönderilemedi. " +
                     $"Aktivasyon kodunuz: {activationCode}";
             }
-            Log.ForContext("OperationType", LogContextValues.OperationUser)
-                .ForContext("UserEmail", user.Email)
-                .Information(UserLogMessages.UserCreated);
+            using (_logger.BeginScope(BuildUserScope(LogContextValues.OperationUser, user.Email)))
+            {
+                _logger.LogInformation(UserLogMessages.UserCreated);
+            }
 
 
             return RedirectToAction("Index", "Activation");
+        }
+        private static Dictionary<string, object?> BuildUserScope(string operationType, string? userEmail = null)
+        {
+            var scope = new Dictionary<string, object?>
+            {
+                ["OperationType"] = operationType
+            };
+
+            if (!string.IsNullOrWhiteSpace(userEmail))
+            {
+                scope["UserEmail"] = userEmail;
+            }
+
+            return scope;
         }
     }
 }

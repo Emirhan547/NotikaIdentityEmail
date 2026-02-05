@@ -3,18 +3,18 @@ using Microsoft.AspNetCore.Mvc;
 using NotikaIdentityEmail.Entities;
 using NotikaIdentityEmail.Logging;
 using NotikaIdentityEmail.Models;
-using NotikaIdentityEmail.Models.IdentityModels;
-using Serilog;
+
 
 namespace NotikaIdentityEmail.Controllers
 {
     public class ActivationController : Controller
     {
         private readonly UserManager<AppUser> _userManager;
-
-        public ActivationController(UserManager<AppUser> userManager)
+        private readonly ILogger<ActivationController> _logger;
+        public ActivationController(UserManager<AppUser> userManager, ILogger<ActivationController> logger)
         {
             _userManager = userManager;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -37,8 +37,10 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user == null)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationAuth)
-                     .Warning(LogMessages.UserNotFound);
+                using (_logger.BeginScope(BuildAuthScope()))
+                {
+                    _logger.LogWarning(LogMessages.UserNotFound);
+                }
 
                 ModelState.AddModelError("", "Kullanıcı bulunamadı");
                 return View(model);
@@ -46,9 +48,10 @@ namespace NotikaIdentityEmail.Controllers
 
             if (user.ActivationCode != model.Code)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationAuth)
-                     .ForContext("UserEmail", user.Email)
-                     .Warning(LogMessages.ActivationCodeInvalid);
+                using (_logger.BeginScope(BuildAuthScope(user.Email)))
+                {
+                    _logger.LogWarning(LogMessages.ActivationCodeInvalid);
+                }
 
                 ModelState.AddModelError("", "Aktivasyon kodu hatalı");
                 return View(model);
@@ -59,11 +62,26 @@ namespace NotikaIdentityEmail.Controllers
 
             await _userManager.UpdateAsync(user);
 
-            Log.ForContext("OperationType", LogContextValues.OperationAuth)
-                .ForContext("UserEmail", user.Email)
-                .Information(AuthLogMessages.UserActivated);
+            using (_logger.BeginScope(BuildAuthScope(user.Email)))
+            {
+                _logger.LogInformation(AuthLogMessages.UserActivated);
+            }
 
             return RedirectToAction("UserLogin", "Login");
+        }
+        private static Dictionary<string, object?> BuildAuthScope(string? userEmail = null)
+        {
+            var scope = new Dictionary<string, object?>
+            {
+                ["OperationType"] = LogContextValues.OperationAuth
+            };
+
+            if (!string.IsNullOrWhiteSpace(userEmail))
+            {
+                scope["UserEmail"] = userEmail;
+            }
+
+            return scope;
         }
     }
 }

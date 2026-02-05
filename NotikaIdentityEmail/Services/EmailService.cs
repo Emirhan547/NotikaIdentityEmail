@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using NotikaIdentityEmail.Logging;
 using NotikaIdentityEmail.Models;
-using Serilog;
 using MimeKit;
 using MailKit.Net.Smtp;
 
@@ -10,10 +9,11 @@ namespace NotikaIdentityEmail.Services
     public class EmailService : IEmailService
     {
         private readonly EmailSettings _emailSettings;
-
-        public EmailService(IOptions<EmailSettings> emailSettings)
+        private readonly ILogger<EmailService> _logger;
+        public EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailService> logger)
         {
             _emailSettings = emailSettings.Value;
+            _logger = logger;
         }
 
         public async Task SendAsync(string to, string subject, string body)
@@ -53,11 +53,27 @@ namespace NotikaIdentityEmail.Services
             }
             catch (Exception ex)
             {
-                Log.ForContext("OperationType", LogContextValues.OperationSystem)
-                     .ForContext("UserEmail", to)
-                     .Error(ex, LogMessages.UnexpectedError);
+                using (_logger.BeginScope(BuildSystemScope(to)))
+                {
+                    _logger.LogError(ex, LogMessages.UnexpectedError);
+                }
                 throw;
             }
+
+        }
+        private static Dictionary<string, object?> BuildSystemScope(string? userEmail)
+        {
+            var scope = new Dictionary<string, object?>
+            {
+                ["OperationType"] = LogContextValues.OperationSystem
+            };
+
+            if (!string.IsNullOrWhiteSpace(userEmail))
+            {
+                scope["UserEmail"] = userEmail;
+            }
+
+            return scope;
         }
     }
 }

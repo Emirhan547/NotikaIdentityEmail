@@ -90,8 +90,6 @@ namespace NotikaIdentityEmail.Areas.Admin.Controllers
 
                 ElasticsearchUrl = _configuration["Elastic:BaseUrl"],
                 KibanaUrl = _configuration["Kibana:Url"],
-                SerilogMinimumLevel = _configuration["Serilog:MinimumLevel:Default"],
-                ElasticsearchEnabled = !string.IsNullOrWhiteSpace(_configuration["Elastic:BaseUrl"]),
                 KibanaEnabled = !string.IsNullOrWhiteSpace(_configuration["Kibana:Url"])
             };
 
