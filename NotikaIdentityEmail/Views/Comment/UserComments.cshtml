@@ -1,4 +1,4 @@
-﻿@using NotikaIdentityEmail.Entities
+﻿﻿@using NotikaIdentityEmail.Entities
 
 @model List<Comment>
 
@@ -7,64 +7,44 @@
     Layout = "~/Views/UserLayout/Index.cshtml";
 }
 
-<style>
-    .forum-post {
-        background-color: #ffffff;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        transition: 0.3s ease-in-out;
-    }
 
-        .forum-post:hover {
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-        }
-
-    .forum-author {
-        font-weight: bold;
-        font-size: 16px;
-        color: #2c3e50;
-    }
-
-    .forum-date {
-        font-size: 13px;
-        color: #888;
-        margin-left: 10px;
-    }
-
-    .forum-content {
-        font-size: 15px;
-        margin-top: 10px;
-        color: #333;
-    }
-</style>
-
-<div class="form-element-area">
+<div class="inbox-area">
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <div class="form-element-list">
-                    <div class="basic-tb-hd">
-                        <h2>🗨️ Forum</h2>
-                    </div>
-
-                    @foreach (var item in Model)
-                    {
-                        <div class="forum-post">
-                            <div>
-                                <span class="forum-author">@item.AppUser.Name @item.AppUser.Surname</span>
-                                <span class="forum-date">- @item.CommentDate.ToString("dd-MMM-yyyy")</span>
-                            </div>
-                            <div class="forum-content">
-                                @item.CommentDetail
-                            </div>
+                
+                <div class="inbox-text-list sm-res-mg-t-30">
+                    <div class="card" style="border:none;border-radius:14px;box-shadow:0 10px 35px rgba(0,0,0,.08);overflow:hidden;">
+                        <div style="padding:26px;background:linear-gradient(120deg,#00c292,#0fb5e9);color:#fff;">
+                            <h2 style="margin:0;font-weight:700;">🗨️ Topluluk Forum Akışı</h2>
+                            <p style="margin:10px 0 0;opacity:.95;">Kullanıcı yorumlarını takip et, yeni yorumunu paylaş.</p>
                         </div>
-                    }
+                    
+                        <div style="padding:24px;background:#fff;">
+                            @if (!Model.Any())
+                            {
+                                <div class="alert alert-info" style="border-radius:10px;">Henüz yorum bulunmuyor. İlk yorumu sen yaz 🎉</div>
+                            }
+                            else
+                            {
+                                foreach (var item in Model.OrderByDescending(x => x.CommentDate))
+                                {
+                                    <div style="border:1px solid #e8edf3;border-radius:12px;padding:16px 18px;margin-bottom:14px;background:#fbfdff;">
+                                        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                                            <strong style="font-size:15px;color:#21324a;">@item.AppUser.Name @item.AppUser.Surname</strong>
+                                            <span style="font-size:12px;color:#7c8ca5;">@item.CommentDate.ToString("dd MMM yyyy HH:mm")</span>
+                                        </div>
+                                        <p style="margin:10px 0 0;color:#3f4f67;line-height:1.7;">@item.CommentDetail</p>
+                                    </div>
+                                }
+                            }
+
+                            @await Html.PartialAsync("CreateComment")
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        @await Html.PartialAsync("CreateComment", "Comment")
+       
     </div>
 </div>

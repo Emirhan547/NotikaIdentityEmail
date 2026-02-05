@@ -1,11 +1,17 @@
-﻿@using NotikaIdentityEmail.Entities
-@model List<Category>
+﻿@using NotikaIdentityEmail.Areas.Admin.Models
+
+@model List<CategorySidebarItemViewModel>
 
 <div class="inbox-status">
     <ul class="inbox-st-nav">
         @foreach (var item in Model)
         {
-            <li><a href="/Message/GetMessageListByCategory/@item.CategoryId"><i class="@item.CategoryIconUrl"></i> @item.CategoryName</a></li>
+            <li>
+                <a href="/Message/GetMessageListByCategory/@item.CategoryId">
+                    <i class="@item.CategoryIconUrl"></i> @item.CategoryName
+                    <span class="pull-right">@item.MessageCount</span>
+                </a>
+            </li>
         }
     </ul>
 </div>

@@ -1,10 +1,10 @@
-﻿<div class="comment-form">
-    <h4>📝 Yeni Yorum Ekle</h4>
+﻿<div style="margin-top:24px;border-top:1px dashed #d8e2ef;padding-top:20px;">
+    <h4 style="margin:0 0 14px;font-weight:700;color:#1d2f47;">📝 Yeni Yorum Ekle</h4>
     <form asp-action="CreateComment" asp-controller="Comment" method="post">
         <div class="form-group mb-3">
-            <label for="CommentDetail">Yorumunuz</label>
-            <textarea name="CommentDetail" class="form-control" rows="4" required></textarea>
+            <label for="CommentDetail" style="font-weight:600;color:#48617d;">Mesajın</label>
+            <textarea name="CommentDetail" class="form-control" rows="5" required style="border-radius:10px;border-color:#d4deea;"></textarea>
         </div>
-        <button type="submit" class="btn btn-success">Yorumu Gönder</button>
+        <button type="submit" class="btn" style="background:#00c292;color:#fff;border-radius:999px;padding:10px 20px;font-weight:600;">Yorumu Gönder</button>
     </form>
 </div>

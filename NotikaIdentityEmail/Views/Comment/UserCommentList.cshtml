@@ -3,45 +3,62 @@
 @model List<Comment>
 
 @{
-    ViewData["Title"] = "CommentList";
+    ViewData["Title"] = "Yorumlarım";
     Layout = "~/Views/UserLayout/Index.cshtml";
-    int count = 0;
+  
 }
 
-<div class="form-element-area">
+<div class="inbox-area">
     <div class="container">
         <div class="row">
-            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                <div class="form-element-list">
-                    <div class="basic-tb-hd">
-                        <h2>Yorum Listesi</h2>
-                    </div>
-                    <div class="row">
-
-                        <table class="table table-bordered">
-                            <tr>
-                                <th>#</th>
-                                <th>Kullanıcı</th>
-                                <th>Yorum</th>
-                                <th>Durum</th>
-                                <th>Sil</th>
-                                <th>Pasif Yap</th>
-                                <th>Yorumu Onayla</th>
-                            </tr>
-                            @foreach (var item in Model)
-                            {
-                                count++;
-                                <tr>
-                                    <td>@count</td>
-                                    <td>@item.AppUser.Name @item.AppUser.Surname</td>
-                                    <td>@item.CommentDetail</td>
-                                    <td>@item.CommentStatus</td>
-                                    <td><a href="/Comment/DeleteComment/@item.CommentId/" class="btn btn-danger">Sil</a></td>
-                                    <td><a href="/Comment/UpdateComment/@item.CommentId/" class="btn btn-warning">Pasif Yap</a></td>
-                                    <td><a href="/Comment/UpdateComment/@item.CommentId/" class="btn btn-primary">Yorumu Onayla</a></td>
-                                </tr>
-                            }
-                        </table>
+            <div class="col-lg-12">
+                <div class="inbox-text-list sm-res-mg-t-30">
+                    <div class="card" style="border:none;border-radius:14px;box-shadow:0 10px 35px rgba(0,0,0,.08);overflow:hidden;">
+                        <div style="padding:22px 24px;background:#fff;border-bottom:1px solid #ecf1f8;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                            <div>
+                                <h2 style="margin:0;font-size:22px;color:#1d2f47;">Yorum Yönetimim</h2>
+                                <p style="margin:6px 0 0;color:#8091a7;">Toplam <strong>@Model.Count</strong> yorumun var.</p>
+                            </div>
+                            <a href="/Comment/UserComments" class="btn btn-sm" style="background:#0fb5e9;color:#fff;border-radius:999px;padding:8px 16px;">Forum Akışına Dön</a>
+                        </div>
+                        <div style="padding:0 24px 24px;background:#fff;">
+                            <div class="table-responsive" style="margin-top:14px;">
+                                <table class="table" style="margin-bottom:0;">
+                                    <thead>
+                                        <tr style="background:#f5f9ff;">
+                                            <th>#</th>
+                                            <th>Yorum</th>
+                                            <th>Tarih</th>
+                                            <th>Durum</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (!Model.Any())
+                                        {
+                                            <tr>
+                                                <td colspan="4" class="text-center" style="padding:24px;color:#8fa1b8;">Henüz yorum eklemediniz.</td>
+                                            </tr>
+                                        }
+                                        else
+                                        {
+                                            int count = 0;
+                                            foreach (var item in Model.OrderByDescending(x => x.CommentDate))
+                                            {
+                                                count++;
+                                                var statusClass = item.CommentStatus == "Onay Bekliyor" ? "#ff9800" : "#00c292";
+                                                var statusBg = item.CommentStatus == "Onay Bekliyor" ? "#fff3e0" : "#e6fff8";
+                                                <tr>
+                                                    <td>@count</td>
+                                                    <td style="max-width:520px;white-space:normal;">@item.CommentDetail</td>
+                                                    <td>@item.CommentDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                                    <td><span style="background:@statusBg;color:@statusClass;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;">@item.CommentStatus</span></td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

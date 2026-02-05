@@ -53,7 +53,7 @@ namespace NotikaIdentityEmail.Services
                 var data = await resp.Content.ReadFromJsonAsync<ElasticSearchResponse>();
                 if (data == null) return new List<ElasticLogItemDto>();
 
-                return data.Hits.Hits.Select(h => Map(h.Source)).ToList();
+                return data.Hits.Hits.Select(h => Map(h.Source, h.Id)).ToList();
             }
             catch (Exception ex)
             {
@@ -131,7 +131,7 @@ namespace NotikaIdentityEmail.Services
                 var data = await resp.Content.ReadFromJsonAsync<ElasticSearchResponse>();
                 if (data == null) return new List<ElasticLogItemDto>();
 
-                return data.Hits.Hits.Select(h => Map(h.Source)).ToList();
+                return data.Hits.Hits.Select(h =>Map(h.Source, h.Id)).ToList();
             }
             catch (Exception ex)
             {
@@ -156,7 +156,7 @@ namespace NotikaIdentityEmail.Services
                 var sourceJson = System.Text.Json.JsonSerializer.Serialize(srcObj);
                 var src = System.Text.Json.JsonSerializer.Deserialize<ElasticSource>(sourceJson);
 
-                return src == null ? null : Map(src);
+                return src == null ? null : Map(src, id);
             }
             catch (Exception ex)
             {
@@ -165,14 +165,15 @@ namespace NotikaIdentityEmail.Services
             }
         }
 
-        private static ElasticLogItemDto Map(ElasticSource src)
+        private static ElasticLogItemDto Map(ElasticSource src, string? documentId = null)
         {
             var dto = new ElasticLogItemDto
             {
                 Timestamp = src.Timestamp,
                 Level = src.Level,
                 MessageTemplate = src.MessageTemplate,
-                RenderedMessage = src.RenderedMessage ?? src.Message
+                RenderedMessage = src.RenderedMessage ?? src.Message,
+                DocumentId = documentId
             };
 
             if (src.Fields == null) return dto;
@@ -180,8 +181,12 @@ namespace NotikaIdentityEmail.Services
             dto.RequestPath = GetString(src.Fields, "RequestPath");
             dto.StatusCode = GetInt(src.Fields, "StatusCode");
             dto.Elapsed = GetDouble(src.Fields, "Elapsed");
-
+            dto.OperationType = GetString(src.Fields, "OperationType");
             dto.UserEmail = GetString(src.Fields, "UserEmail");
+            dto.SenderEmail = GetString(src.Fields, "SenderEmail");
+            dto.ReceiverEmail = GetString(src.Fields, "ReceiverEmail");
+            dto.MessageCategory = GetString(src.Fields, "MessageCategory");
+            dto.MessageStatus = GetString(src.Fields, "MessageStatus");
             dto.MessageId = GetInt(src.Fields, "MessageId");
             dto.CategoryId = GetInt(src.Fields, "CategoryId");
             dto.IsDraft = GetBool(src.Fields, "IsDraft");

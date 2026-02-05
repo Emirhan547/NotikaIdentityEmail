@@ -2,7 +2,7 @@
 {
     public class ElasticLogItemDto
     {
-        public int Id { get; set; }
+        public string? DocumentId { get; set; }
         public DateTime Timestamp { get; set; }
         public string? Level { get; set; }
         public string? MessageTemplate { get; set; }
