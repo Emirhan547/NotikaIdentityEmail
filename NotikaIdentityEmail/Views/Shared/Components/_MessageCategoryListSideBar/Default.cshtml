@@ -1,17 +1,82 @@
 ﻿@using NotikaIdentityEmail.Areas.Admin.Models
-
 @model List<CategorySidebarItemViewModel>
 
+@{
+    var visibleCount = 5; // İLK 5 KATEGORİ
+}
+
 <div class="inbox-status">
-    <ul class="inbox-st-nav">
-        @foreach (var item in Model)
+    <ul class="inbox-st-nav" id="categoryList">
+
+        @for (int i = 0; i < Model.Count; i++)
         {
-            <li>
+            var item = Model[i];
+            var hiddenClass = i >= visibleCount ? "category-hidden extra-category" : "";
+
+            <li class="@hiddenClass">
                 <a href="/Message/GetMessageListByCategory/@item.CategoryId">
-                    <i class="@item.CategoryIconUrl"></i> @item.CategoryName
+                    <i class="@item.CategoryIconUrl"></i>
+                    @item.CategoryName
                     <span class="pull-right">@item.MessageCount</span>
                 </a>
             </li>
         }
+
+        @if (Model.Count > visibleCount)
+        {
+            <li>
+                <a href="javascript:void(0)"
+                   id="toggleCategories"
+                   class="toggle-category-btn">
+                    <i class="notika-icon notika-down-arrow"></i>
+                    Tüm kategorileri gör
+                </a>
+
+            </li>
+        }
     </ul>
 </div>
+
+<!-- CSS -->
+<style>
+    .category-hidden {
+        display: none;
+    }
+
+    .toggle-category-btn {
+        font-weight: 600;
+        color: #00c292;
+        cursor: pointer;
+    }
+
+        .toggle-category-btn:hover {
+            text-decoration: underline;
+        }
+</style>
+
+<!-- JS -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const toggleBtn = document.getElementById("toggleCategories");
+        if (!toggleBtn) return;
+
+        let expanded = false;
+
+        toggleBtn.addEventListener("click", function () {
+
+            const items = document.querySelectorAll(".extra-category");
+
+            items.forEach(item => {
+                item.style.display = expanded ? "none" : "list-item";
+            });
+
+           toggleBtn.innerHTML = expanded
+    ? '<i class="notika-icon notika-down-arrow"></i> Tüm kategorileri gör'
+    : '<i class="notika-icon notika-up-arrow"></i> Daha az göster';
+
+
+            expanded = !expanded;
+        });
+    });
+</script>

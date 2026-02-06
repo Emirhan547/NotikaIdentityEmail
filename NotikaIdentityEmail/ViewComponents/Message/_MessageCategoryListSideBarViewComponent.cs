@@ -1,5 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NotikaIdentityEmail.Areas.Admin.Models;
@@ -12,7 +11,10 @@ namespace NotikaIdentityEmail.ViewComponents.Message
     {
         private readonly EmailContext _emailContext;
         private readonly UserManager<AppUser> _userManager;
-        public _MessageCategoryListSideBarViewComponent(EmailContext emailContext, UserManager<AppUser> userManager)
+
+        public _MessageCategoryListSideBarViewComponent(
+            EmailContext emailContext,
+            UserManager<AppUser> userManager)
         {
             _emailContext = emailContext;
             _userManager = userManager;
@@ -20,7 +22,7 @@ namespace NotikaIdentityEmail.ViewComponents.Message
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var user = await _userManager.FindByNameAsync(User.Identity?.Name ?? string.Empty);
+            var user = await _userManager.FindByNameAsync(User.Identity?.Name ?? "");
             var userEmail = user?.Email;
 
             var categoryList = await _emailContext.Categories

@@ -186,6 +186,7 @@ try
     {
         logger.LogInformation(SystemLogMessages.SystemStarted);
     }
+   
 
     app.Run();
 }
