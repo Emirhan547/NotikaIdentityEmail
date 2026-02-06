@@ -1,28 +1,40 @@
 ﻿@using NotikaIdentityEmail.Entities
 @model List<Notification>
-@{
-    int count = 0;
-}
-
-<div role="menu" class="dropdown-menu message-dd notification-dd animated zoomIn">
+<div role="menu" class="dropdown-menu message-dd notification-dd animated zoomIn" style="min-width: 360px;">
     <div class="hd-mg-tt">
         <h2>Bildirimler</h2>
     </div>
     <div class="hd-message-info">
-        @foreach (var item in Model)
+        @if (Model.Any())
         {
-            count++;
-            <a href="#">
-                <div class="hd-message-sn">
-                    <div class="hd-message-img">
-                        <img src="@item.ImageUrl" alt="" />
+          @foreach (var item in Model)
+            {
+                var detail = item.Detail ?? string.Empty;
+                var shortDetail = detail.Length > 70
+                    ? detail.Substring(0, 70) + "..."
+                    : detail;
+
+                <a href="#">
+                    <div class="hd-message-sn">
+                        <div class="hd-message-img">
+                            <img src="@(string.IsNullOrWhiteSpace(item.ImageUrl) ? "/notika-master/notika/green-horizotal/img/post/4.jpg" : item.ImageUrl)" alt="Bildirim" />
+                        </div>
+                        <div class="hd-mg-ctn">
+                            <h3>Sistem Bildirimi</h3>
+                            <p>@shortDetail</p>
+                        </div>
                     </div>
-                    <div class="hd-mg-ctn">
-                        <h3>Bildirim - @count</h3>
-                        <p>@item.Detail</p>
-                    </div>
+                     </a>
+            }
+        }
+        else
+        {
+            <div class="hd-message-sn">
+                <div class="hd-mg-ctn" style="padding-left:10px;">
+                    <h3>Bildirim yok</h3>
+                    <p>Yeni bildirimler burada listelenecek.</p>
                 </div>
-            </a>
+            </div>
         }
 
 

@@ -1,29 +1,56 @@
-﻿@model List<MessageListWithUsersInfoViewModel>
+﻿@model List<NotikaIdentityEmail.Models.MessageListWithUsersInfoViewModel>
 
 <li class="nav-item dropdown">
-    <a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><span><i class="notika-icon notika-mail"></i></span></a>
-    <div role="menu" class="dropdown-menu message-dd animated zoomIn">
+    <a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle">
+        <span><i class="notika-icon notika-mail"></i></span>
+    </a>
+    <div role="menu" class="dropdown-menu message-dd animated zoomIn" style="min-width: 360px;">
         <div class="hd-mg-tt">
-            <h2>Mesajlar</h2>
+            <h2>Son Mesajlar</h2>
         </div>
         <div class="hd-message-info">
-            @foreach (var item in Model)
+            @if (Model.Any())
             {
-                <a href="#">
-                    <div class="hd-message-sn">
-                        <div class="hd-message-img">
-                            <img src="@item.ProfileImageUrl" alt="" />
+               @foreach (var item in Model)
+                {
+                    var detail = item.MessageDetail ?? string.Empty;
+                    var shortMessage = detail.Length > 55
+                        ? detail.Substring(0, 55) + "..."
+                        : detail;
+
+                    <a asp-controller="Message" asp-action="MessageDetail" asp-route-id="@item.MessageId" style="border-left: 3px solid @(item.IsRead ? "transparent" : "#00c292");">
+                        <div class="hd-message-sn" style="background-color: @(item.IsRead ? "#fff" : "#f0fff6");">
+                            <div class="hd-message-img">
+                                <img src="@(string.IsNullOrWhiteSpace(item.ProfileImageUrl) ? "/notika-master/notika/green-horizotal/img/post/4.jpg" : item.ProfileImageUrl)" alt="@item.FullName" />
+                            </div>
+                            <div class="hd-mg-ctn">
+                                <h3>
+                                    @item.FullName
+                                    @if (!item.IsRead)
+                                    {
+                                        <span style="font-size: 10px; color: #00c292; font-weight: 700; margin-left: 6px;">YENİ</span>
+                                    }
+                                </h3>
+                                <p style="font-weight: 600; color: #444; margin-bottom: 2px;">@item.Subject</p>
+                                <p>@shortMessage</p>
+                                <small style="color:#999;">@item.SendDate.ToString("dd.MM.yyyy HH:mm")</small>
+                            </div>
                         </div>
-                        <div class="hd-mg-ctn">
-                            <h3>@item.FullName</h3>
-                            <p>@item.MessageDetail</p>
-                        </div>
+                        </a>
+                }
+            }
+            else
+            {
+                <div class="hd-message-sn">
+                    <div class="hd-mg-ctn" style="padding-left:10px;">
+                        <h3>Henüz mesaj yok</h3>
+                        <p>Yeni gelen mesajlar burada görünecek.</p>
                     </div>
-                </a>
+                </div>
             }
         </div>
         <div class="hd-mg-va">
-            <a href="/Message/Inbox/">Tümünü Gör</a>
+            <a asp-controller="Message" asp-action="Inbox">Tümünü Gör</a>
         </div>
     </div>
 </li>

@@ -31,7 +31,7 @@
                             @await Component.InvokeAsync("_MessageListOnNavbar")
 
                             <li class="nav-item nc-al">
-                                <a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><span><i class="notika-icon notika-alarm"></i></span><div class="spinner4 spinner-4"></div><div class="ntd-ctn"><span>@ViewBag.userEmailCount</span></div></a>
+                                <a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><span><i class="notika-icon notika-alarm"></i></span><div class="spinner4 spinner-4"></div><div class="ntd-ctn"><span>@ViewBag.unreadMessageCount</span></div></a>
 
                                 @await Component.InvokeAsync("_NotificationListOnNavbar")
                             </li>

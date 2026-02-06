@@ -6,11 +6,11 @@ namespace NotikaIdentityEmail.Areas.Admin.Controllers
 {
     [Area("Admin")]
     [Authorize(Roles = "Admin")]
-    public class LogsController : Controller
+    public class LogController : Controller
     {
         private readonly ElasticLogService _elastic;
 
-        public LogsController(ElasticLogService elastic)
+        public LogController(ElasticLogService elastic)
         {
             _elastic = elastic;
         }

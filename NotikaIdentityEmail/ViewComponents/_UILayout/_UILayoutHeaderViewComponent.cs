@@ -17,11 +17,18 @@ namespace NotikaIdentityEmail.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var userValue = await _userManager.FindByNameAsync(User.Identity.Name);
-            var userEmail = userValue.Email;
-            var userEmailCount = _context.Messages.Where(x => x.ReceiverEmail == userEmail).Count();
-            ViewBag.userEmailCount = userEmailCount;
-            ViewBag.notificationCount = _context.Notifications.Count();
+            var userValue = await _userManager.FindByNameAsync(User.Identity?.Name);
+            if (userValue != null)
+            {
+                var userEmail = userValue.Email;
+                ViewBag.unreadMessageCount = _context.Messages.Count(x => x.ReceiverEmail == userEmail && !x.IsDeleted && !x.IsDraft && !x.IsRead);
+                ViewBag.notificationCount = _context.Notifications.Count();
+            }
+            else
+            {
+                ViewBag.unreadMessageCount = 0;
+                ViewBag.notificationCount = 0;
+            }
             return View();
         }
     }

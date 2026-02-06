@@ -1,402 +1,659 @@
-﻿@using NotikaIdentityEmail.Areas.Admin.Models
-@model DashboardViewModel
+﻿@model NotikaIdentityEmail.Areas.Admin.Models.DashboardViewModel
+@using NotikaIdentityEmail.Models.Elastics
 
 @{
     ViewData["Title"] = "Yönetim Paneli";
+
+    var totalRead = Model.MessageCount - Model.UnreadMessageCount;
     var readRate = Model.MessageCount > 0
-        ? (int)Math.Round((1 - (double)Model.UnreadMessageCount / Model.MessageCount) * 100)
+        ? (int)Math.Round((double)totalRead / Model.MessageCount * 100)
         : 0;
-    var draftRate = Model.MessageCount > 0
-        ? (int)Math.Round(((double)Model.DraftCount / Model.MessageCount) * 100)
-        : 0;
+
     var unreadRate = Model.MessageCount > 0
-        ? (int)Math.Round(((double)Model.UnreadMessageCount / Model.MessageCount) * 100)
+        ? (int)Math.Round((double)Model.UnreadMessageCount / Model.MessageCount * 100)
         : 0;
-    var commentRate = Model.CommentCount > 100 ? 100 : Model.CommentCount;
 }
 
-<div class="space-y-8">
-    <!-- Başlık ve Kontroller -->
-    <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-            <div class="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                <span class="material-symbols-outlined text-base">dashboard</span>
-                Gerçek Zamanlı Yönetim Paneli
-            </div>
-            <h2 class="mt-3 text-3xl font-bold text-gray-900">Yönetim Paneli Genel Bakış</h2>
-            <p class="text-gray-500 text-sm mt-2 max-w-2xl">Sistem istatistikleriniz, mesaj performansınız ve platform sağlığınız aşağıda özetlenmiştir.</p>
-        </div>
-        <div class="flex flex-wrap gap-3">
-            <button class="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center gap-2" type="button">
-                <span class="material-symbols-outlined text-lg">calendar_today</span>
-                Son 24 Saat
-            </button>
-            <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2" type="button">
-                <span class="material-symbols-outlined text-lg">download</span>
-                Raporu İndir
-            </button>
-            @if (Model.KibanaEnabled)
-            {
-                <a href="@Model.KibanaUrl" target="_blank" class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center gap-2">
-                    <span class="material-symbols-outlined text-lg">monitoring</span>
-                    Kibana Canlı Görünüm
-                </a>
-            }
-        </div>
-    </div>
+<div class="container-fluid px-4 py-5">
 
-    <!-- İstatistik Kartları -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Kullanıcı Kartı -->
-        <div class="rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white p-6 shadow-lg">
-            <div class="flex items-center justify-between">
-                <div class="p-3 bg-white/20 rounded-lg">
-                    <span class="material-symbols-outlined text-2xl">group</span>
-                </div>
-                <span class="text-xs font-semibold bg-white/20 px-2 py-1 rounded-full">+%12</span>
-            </div>
-            <p class="text-sm opacity-90 mt-4">Toplam Kullanıcı</p>
-            <h3 class="text-3xl font-bold mt-1">@Model.UserCount</h3>
-            <p class="text-xs opacity-75 mt-2">Sistemdeki aktif hesaplar</p>
-        </div>
-
-        <!-- Mesaj Kartı -->
-        <div class="rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white p-6 shadow-lg">
-            <div class="flex items-center justify-between">
-                <div class="p-3 bg-white/20 rounded-lg">
-                    <span class="material-symbols-outlined text-2xl">mail</span>
-                </div>
-                <span class="text-xs font-semibold bg-white/20 px-2 py-1 rounded-full">+%5</span>
-            </div>
-            <p class="text-sm opacity-90 mt-4">Toplam Mesaj</p>
-            <h3 class="text-3xl font-bold mt-1">@Model.MessageCount</h3>
-            <div class="mt-3">
-                <div class="flex justify-between text-xs mb-1">
-                    <span>@Model.UnreadMessageCount okunmamış</span>
-                    <span>%@readRate okunma oranı</span>
-                </div>
-                <div class="h-1.5 bg-white/30 rounded-full overflow-hidden">
-                    <div class="h-full bg-white" style="width: @readRate%"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Taslak & Çöp Kartı -->
-        <div class="rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white p-6 shadow-lg">
-            <div class="flex items-center justify-between">
-                <div class="p-3 bg-white/20 rounded-lg">
-                    <span class="material-symbols-outlined text-2xl">drafts</span>
-                </div>
-                <span class="text-xs font-semibold bg-white/20 px-2 py-1 rounded-full">%@draftRate</span>
-            </div>
-            <p class="text-sm opacity-90 mt-4">Taslak & Çöp Kutusu</p>
-            <div class="flex items-baseline gap-4 mt-2">
-                <div>
-                    <h3 class="text-3xl font-bold">@Model.DraftCount</h3>
-                    <p class="text-xs opacity-75">Taslak</p>
-                </div>
-                <div class="h-8 w-px bg-white/30"></div>
-                <div>
-                    <h3 class="text-3xl font-bold">@Model.TrashCount</h3>
-                    <p class="text-xs opacity-75">Çöp Kutusu</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Hata Kartı -->
-        <div class="rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 text-white p-6 shadow-lg">
-            <div class="flex items-center justify-between">
-                <div class="p-3 bg-white/20 rounded-lg">
-                    <span class="material-symbols-outlined text-2xl">error</span>
-                </div>
-                <span class="text-xs font-semibold bg-white/20 px-2 py-1 rounded-full">Son 24s</span>
-            </div>
-            <p class="text-sm opacity-90 mt-4">Sistem Hataları</p>
-            <h3 class="text-3xl font-bold mt-1">@Model.ErrorCountLast24h</h3>
-            <p class="text-xs opacity-75 mt-2">Elasticsearch üzerinden izleniyor</p>
-        </div>
-    </div>
-
-    <!-- Grafik ve Kategori Alanı -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Mesaj Grafiği -->
-        <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h4 class="text-lg font-bold text-gray-900">Mesaj İstatistikleri</h4>
-                    <p class="text-sm text-gray-500 mt-1">Günlük mesaj aktivitesi ve performans trendleri</p>
-                </div>
-                <div class="flex gap-2">
-                    <button class="px-3 py-1 text-sm font-medium rounded-lg bg-primary text-white" type="button">Günlük</button>
-                    <button class="px-3 py-1 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100" type="button">Haftalık</button>
-                    <button class="px-3 py-1 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100" type="button">Aylık</button>
-                </div>
-            </div>
-
-            <!-- Mini İstatistikler -->
-            <div class="grid grid-cols-3 gap-4 mb-6">
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary">check_circle</span>
-                        <span class="text-xs font-semibold text-gray-600">Okunma Oranı</span>
-                    </div>
-                    <p class="text-2xl font-bold text-gray-900 mt-2">%@readRate</p>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-emerald-500">notifications</span>
-                        <span class="text-xs font-semibold text-gray-600">Bildirimler</span>
-                    </div>
-                    <p class="text-2xl font-bold text-gray-900 mt-2">@Model.NotificationCount</p>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-amber-500">category</span>
-                        <span class="text-xs font-semibold text-gray-600">Kategoriler</span>
-                    </div>
-                    <p class="text-2xl font-bold text-gray-900 mt-2">@Model.CategoryCount</p>
-                </div>
-            </div>
-
-            <!-- Grafik Alanı -->
-            <div class="relative h-64 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-dashed border-gray-300">
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="text-center">
-                        <span class="material-symbols-outlined text-4xl text-primary opacity-50">bar_chart</span>
-                        <p class="text-sm font-semibold text-gray-700 mt-2">İnteraktif Grafik Alanı</p>
-                        <p class="text-xs text-gray-500">Verilerinizi görselleştirmek için bir grafik kütüphanesi entegre edin</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Kategori Dağılımı -->
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <div class="flex items-center justify-between mb-6">
-                <h4 class="text-lg font-bold text-gray-900">Kategori Dağılımı</h4>
-                <span class="text-xs text-gray-400">En çok mesaj alan 6 kategori</span>
-            </div>
-            <div class="space-y-4">
-                @foreach (var stat in Model.CategoryStats)
-                {
-                    var percentage = Model.MessageCount > 0 ? (int)Math.Round((double)stat.MessageCount / Model.MessageCount * 100) : 0;
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-sm">
-                            <span class="font-medium text-gray-900">@stat.CategoryName</span>
-                            <span class="text-gray-600">@stat.MessageCount mesaj</span>
+    <!-- 🎯 HERO SECTION -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg overflow-hidden" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body p-5 text-white">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h1 class="display-5 fw-bold mb-2">
+                                <i class="fas fa-chart-line me-2"></i>Dashboard
+                            </h1>
+                            <p class="lead mb-0 opacity-90">
+                                Sistem metriklerinizi gerçek zamanlı takip edin
+                            </p>
                         </div>
-                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full"
-                                 style="width: @percentage%"></div>
+                        <div class="text-end d-none d-md-block">
+                            <p class="mb-1 opacity-75 small">Bugün</p>
+                            <h4 class="mb-0 fw-bold">@DateTime.Now.ToString("dd MMMM yyyy")</h4>
+                            <p class="mb-0 small">@DateTime.Now.ToString("HH:mm")</p>
                         </div>
                     </div>
-                }
-            </div>
-            <div class="mt-6 pt-4 border-t border-gray-200">
-                <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">Toplam Kategori:</span>
-                    <span class="font-bold text-gray-900">@Model.CategoryCount</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Sistem Durumu ve Son Mesajlar -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Sistem Performansı -->
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <div class="flex items-center justify-between mb-6">
-                <h4 class="text-lg font-bold text-gray-900">Sistem Performansı</h4>
-                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
-                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1"></span>
-                    Sağlıklı
-                </span>
-            </div>
-
-            <div class="space-y-5">
-                <!-- Okunmamış Mesajlar -->
-                <div>
-                    <div class="flex justify-between text-sm mb-2">
-                        <span class="text-gray-700">Okunmamış Mesajlar</span>
-                        <span class="font-semibold text-gray-900">@Model.UnreadMessageCount</span>
-                    </div>
-                    <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div class="h-full bg-gradient-to-r from-rose-500 to-pink-500" style="width: @unreadRate%"></div>
-                    </div>
-                </div>
-
-                <!-- Taslak Oranı -->
-                <div>
-                    <div class="flex justify-between text-sm mb-2">
-                        <span class="text-gray-700">Taslak Oranı</span>
-                        <span class="font-semibold text-gray-900">%@draftRate</span>
-                    </div>
-                    <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div class="h-full bg-gradient-to-r from-amber-500 to-orange-500" style="width: @draftRate%"></div>
-                    </div>
-                </div>
-
-                <!-- Yorum Sayısı -->
-                <div>
-                    <div class="flex justify-between text-sm mb-2">
-                        <span class="text-gray-700">Aktif Yorumlar</span>
-                        <span class="font-semibold text-gray-900">@Model.CommentCount</span>
-                    </div>
-                    <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-500" style="width: @commentRate%"></div>
-                    </div>
-                </div>
-
-                <!-- Çöp Kutusu -->
-                <div>
-                    <div class="flex justify-between text-sm mb-2">
-                        <span class="text-gray-700">Çöp Kutusu</span>
-                        <span class="font-semibold text-gray-900">@Model.TrashCount</span>
-                    </div>
-                    <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div class="h-full bg-gradient-to-r from-gray-500 to-gray-700" style="width: @Math.Min(100, Model.TrashCount)%"></div>
+    <!-- 📊 İSTATİSTİK KARTLARI -->
+    <div class="row g-4 mb-4">
+        <!-- Kullanıcı -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 card-hover">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-lg rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-users fa-2x text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="text-muted text-uppercase fw-semibold mb-1 small">Kullanıcılar</p>
+                            <h3 class="mb-0 fw-bold">@Model.UserCount</h3>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Mesaj -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 card-hover">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-lg rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-envelope fa-2x text-success"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="text-muted text-uppercase fw-semibold mb-1 small">Toplam Mesaj</p>
+                            <h3 class="mb-0 fw-bold">@Model.MessageCount</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Okunmamış -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 card-hover">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-lg rounded-circle bg-warning bg-opacity-10 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-envelope-open fa-2x text-warning"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="text-muted text-uppercase fw-semibold mb-1 small">Okunmamış</p>
+                            <h3 class="mb-0 fw-bold">@Model.UnreadMessageCount</h3>
+                            <span class="badge bg-warning bg-opacity-10 text-warning small">%@unreadRate</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hata -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 card-hover">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-lg rounded-circle bg-danger bg-opacity-10 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="text-muted text-uppercase fw-semibold mb-1 small">24s Hata</p>
+                            <h3 class="mb-0 fw-bold" id="errorCountDisplay">@Model.ErrorCountLast24h</h3>
+                            <span class="badge bg-danger bg-opacity-10 text-danger small">
+                                <i class="fas fa-sync-alt fa-spin me-1"></i>Canlı
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📈 GRAFİKLER VE İSTATİSTİKLER -->
+    <div class="row g-4 mb-4">
+        <!-- Sol Taraf - Haftalık Trend -->
+        <div class="col-xl-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pt-4 pb-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="card-title mb-1 fw-bold">
+                                <i class="fas fa-chart-area text-primary me-2"></i>
+                                Son 7 Gün Mesaj Trendi
+                            </h5>
+                            <p class="text-muted small mb-0">Günlük mesaj ve okunma durumu</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" style="height: 400px;">
+                    <canvas id="weeklyMessagesChart"
+                            style="height: 100% !important;"
+                            data-labels='@System.Text.Json.JsonSerializer.Serialize(Model.WeeklyMessageLabels)'
+                            data-totals='@System.Text.Json.JsonSerializer.Serialize(Model.WeeklyMessageCounts)'
+                            data-unread='@System.Text.Json.JsonSerializer.Serialize(Model.WeeklyUnreadMessageCounts)'>
+                    </canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Taraf - Mesaj Durumu -->
+        <div class="col-xl-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pt-4 pb-3">
+                    <h5 class="card-title mb-1 fw-bold">
+                        <i class="fas fa-chart-pie text-success me-2"></i>
+                        Mesaj Durumu
+                    </h5>
+                    <p class="text-muted small mb-0">Okunma oranları</p>
+                </div>
+                <div class="card-body d-flex flex-column" style="height: 400px;">
+                    <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+                        <canvas id="messageStatusChart"
+                                style="max-height: 250px;"
+                                data-read="@totalRead"
+                                data-unread="@Model.UnreadMessageCount">
+                        </canvas>
+                    </div>
+
+                    <div class="row g-3 mt-auto">
+                        <div class="col-6">
+                            <div class="p-3 rounded" style="background-color: rgba(34, 197, 94, 0.1);">
+                                <p class="text-muted small mb-1">Okundu</p>
+                                <h5 class="mb-0 fw-bold text-success">@totalRead</h5>
+                                <small class="text-success">%@readRate</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded" style="background-color: rgba(239, 68, 68, 0.1);">
+                                <p class="text-muted small mb-1">Okunmadı</p>
+                                <h5 class="mb-0 fw-bold text-danger">@Model.UnreadMessageCount</h5>
+                                <small class="text-danger">%@unreadRate</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📋 İÇERİK LİSTELERİ -->
+    <div class="row g-4 mb-4">
         <!-- Son Mesajlar -->
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h4 class="text-lg font-bold text-gray-900">Son Mesajlar</h4>
-                <p class="text-sm text-gray-500 mt-1">En son gelen 6 mesaj</p>
-            </div>
-            <div class="divide-y divide-gray-100">
-                @foreach (var message in Model.RecentMessages)
-                {
-                    <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
-                        <div class="flex items-start justify-between">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2">
-                                    <h5 class="font-semibold text-gray-900 text-sm">@message.Subject</h5>
-                                    @if (!message.IsRead)
-                                    {
-                                        <span class="px-2 py-0.5 text-xs font-semibold bg-rose-100 text-rose-700 rounded-full">Yeni</span>
-                                    }
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h5 class="card-title mb-0 fw-bold">
+                            <i class="fas fa-inbox text-info me-2"></i>
+                            Son Mesajlar
+                        </h5>
+                        <a asp-area="Admin" asp-controller="Message" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                            Tümünü Gör <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @if (Model.RecentMessages.Any())
+                        {
+                            foreach (var message in Model.RecentMessages)
+                            {
+                                var subject = string.IsNullOrWhiteSpace(message.Subject) ? "(Konu yok)" : message.Subject;
+
+                                <div class="list-group-item border-0 py-3 px-4 message-item">
+                                    <div class="d-flex w-100 align-items-start">
+                                        <div class="flex-shrink-0 me-3">
+                                            <div class="avatar-sm rounded-circle bg-light d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-envelope @(message.IsRead ? "text-muted" : "text-primary")"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex w-100 justify-content-between align-items-start mb-1">
+                                                <h6 class="mb-0 fw-semibold">@subject</h6>
+                                                <span class="badge @(message.IsRead ? "bg-secondary" : "bg-danger") ms-2">
+                                                    @(message.IsRead ? "Okundu" : "Yeni")
+                                                </span>
+                                            </div>
+                                            <p class="mb-1 text-muted small">
+                                                <i class="fas fa-user me-1"></i>@message.SenderEmail
+                                            </p>
+                                            <p class="mb-0 text-muted small">
+                                                <i class="fas fa-tag me-1"></i>@message.CategoryName
+                                                <span class="mx-2">•</span>
+                                                <i class="fas fa-clock me-1"></i>@message.SendDate.ToString("dd.MM.yyyy HH:mm")
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <p class="text-sm text-gray-600 mt-1">@message.SenderEmail</p>
-                                <div class="flex items-center gap-3 mt-2">
-                                    <span class="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">@message.CategoryName</span>
-                                    <span class="text-xs text-gray-500">@message.SendDate.ToString("dd.MM.yyyy HH:mm")</span>
+                            }
+                        }
+                        else
+                        {
+                            <div class="p-5 text-center text-muted">
+                                <i class="fas fa-inbox fa-3x mb-3 opacity-50"></i>
+                                <p class="mb-0">Henüz mesaj bulunmuyor</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kategori İstatistikleri -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h5 class="card-title mb-0 fw-bold">
+                            <i class="fas fa-chart-bar text-warning me-2"></i>
+                            Kategori Dağılımı
+                        </h5>
+                        <a asp-area="Admin" asp-controller="Category" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                            Tümünü Gör <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.CategoryStats.Any())
+                    {
+                        foreach (var category in Model.CategoryStats)
+                        {
+                            var percentage = Model.MessageCount > 0
+                            ? (int)Math.Round((double)category.MessageCount / Model.MessageCount * 100)
+                            : 0;
+
+                            var colors = new[] { "primary", "success", "info", "warning", "danger", "secondary" };
+                            var colorIndex = Model.CategoryStats.ToList().IndexOf(category) % colors.Length;
+                            var color = colors[colorIndex];
+
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-folder text-@color me-2"></i>
+                                        <span class="fw-semibold">@category.CategoryName</span>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="fw-bold text-@color">@category.MessageCount</span>
+                                        <span class="text-muted small ms-1">(%@percentage)</span>
+                                    </div>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-@color"
+                                         role="progressbar"
+                                         style="width: @percentage%"
+                                         aria-valuenow="@percentage"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100">
+                                    </div>
                                 </div>
                             </div>
-                            <button class="text-gray-400 hover:text-primary transition-colors">
-                                <span class="material-symbols-outlined">more_vert</span>
-                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-folder-open fa-3x mb-3 opacity-50"></i>
+                            <p class="mb-0">Henüz kategori bulunmuyor</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔍 ELASTİCSEARCH & SİSTEM LOGLARı -->
+    @if (Model.LatestElasticLogs != null && Model.LatestElasticLogs.Any())
+    {
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 pt-4 pb-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h5 class="card-title mb-0 fw-bold">
+                                <i class="fas fa-terminal text-dark me-2"></i>
+                                Sistem Logları (Elasticsearch)
+                            </h5>
+                            @if (Model.KibanaEnabled)
+                            {
+                                <a href="@Model.KibanaUrl" target="_blank" class="btn btn-sm btn-outline-dark">
+                                    <i class="fas fa-external-link-alt me-1"></i>Kibana'da Aç
+                                </a>
+                            }
                         </div>
                     </div>
-                }
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 140px;">Zaman</th>
+                                        <th style="width: 100px;">Seviye</th>
+                                        <th>Mesaj</th>
+                                        <th style="width: 200px;">Kullanıcı</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var log in Model.LatestElasticLogs)
+                                    {
+                                        var levelClass = log.Level?.ToLower() switch
+                                        {
+                                            "error" => "danger",
+                                            "warning" => "warning",
+                                            "information" => "info",
+                                            "debug" => "secondary",
+                                            _ => "dark"
+                                        };
+
+                                        var message = !string.IsNullOrEmpty(log.RenderedMessage) ? log.RenderedMessage : log.MessageTemplate;
+                                        var user = !string.IsNullOrEmpty(log.UserEmail) ? log.UserEmail : (!string.IsNullOrEmpty(log.SenderEmail) ? log.SenderEmail : "Sistem");
+
+                                        <tr class="log-row">
+                                            <td class="small text-muted">
+                                                <i class="far fa-clock me-1"></i>
+                                                @log.Timestamp.ToString("dd.MM HH:mm:ss")
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-@levelClass">@log.Level</span>
+                                            </td>
+                                            <td class="small">
+                                                <span class="text-truncate d-inline-block" style="max-width: 500px;" title="@message">
+                                                    @message
+                                                </span>
+                                            </td>
+                                            <td class="small text-muted">@user</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
-                <a href="#" class="text-sm font-medium text-primary hover:text-primary/80 flex items-center justify-center gap-1">
-                    Tüm Mesajları Görüntüle
-                    <span class="material-symbols-outlined text-base">arrow_forward</span>
-                </a>
+        </div>
+    }
+
+    <!-- 📦 EK İSTATİSTİKLER -->
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body py-4">
+                    <div class="mb-3">
+                        <i class="fas fa-folder-open fa-3x text-info"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">@Model.CategoryCount</h4>
+                    <p class="text-muted mb-0 small">Kategori</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body py-4">
+                    <div class="mb-3">
+                        <i class="fas fa-file-alt fa-3x text-secondary"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">@Model.DraftCount</h4>
+                    <p class="text-muted mb-0 small">Taslak</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body py-4">
+                    <div class="mb-3">
+                        <i class="fas fa-trash fa-3x text-danger"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">@Model.TrashCount</h4>
+                    <p class="text-muted mb-0 small">Çöp Kutusu</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body py-4">
+                    <div class="mb-3">
+                        <i class="fas fa-bell fa-3x text-warning"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">@Model.NotificationCount</h4>
+                    <p class="text-muted mb-0 small">Bildirim</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Hata Logları -->
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <div>
-                <h4 class="text-lg font-bold text-gray-900">Sistem Logları</h4>
-                <p class="text-sm text-gray-500">Son Elasticsearch hata kayıtları</p>
-            </div>
-            @if (!string.IsNullOrWhiteSpace(Model.KibanaUrl))
-            {
-                <a href="@Model.KibanaUrl" target="_blank"
-                   class="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg flex items-center gap-2 transition-colors">
-                    <span class="material-symbols-outlined text-base">open_in_new</span>
-                    Tüm Logları Görüntüle
-                </a>
-            }
-        </div>
-        <div class="overflow-x-auto">
-            <table class="w-full min-w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Zaman</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Seviye</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Kullanıcı</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Mesaj</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">İşlem</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @foreach (var log in Model.LatestElasticLogs.Take(5))
-                    {
-                        var statusClass = log.Level switch
-                        {
-                            "Error" or "Fatal" => "bg-rose-100 text-rose-700",
-                            "Warning" => "bg-amber-100 text-amber-700",
-                            "Info" => "bg-blue-100 text-blue-700",
-                            _ => "bg-gray-100 text-gray-700"
-                        };
-
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
-                                @log.Timestamp.ToString("dd.MM.yyyy HH:mm")
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="px-3 py-1 rounded-full text-xs font-semibold @statusClass">
-                                    @log.Level
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-900">
-                                @(log.UserEmail ?? log.SenderEmail ?? "Sistem")
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
-                                @log.RenderedMessage?.Substring(0, Math.Min(50, log.RenderedMessage.Length))...
-                            </td>
-                            <td class="px-6 py-4">
-                                <button class="text-gray-400 hover:text-primary transition-colors">
-                                    <span class="material-symbols-outlined">visibility</span>
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-        @if (Model.LatestElasticLogs.Count() > 5)
-        {
-            <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 text-center">
-                <button class="text-sm font-medium text-gray-600 hover:text-primary transition-colors">
-                    + @(Model.LatestElasticLogs.Count() - 5) daha fazla log göster
-                </button>
-            </div>
-        }
-    </div>
-
-    <!-- Footer -->
-    <div class="text-center text-sm text-gray-500 py-4 border-t border-gray-200">
-        <p>Son güncelleme: @DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss")</p>
-    </div>
 </div>
 
-<style>
-    .material-symbols-outlined {
-        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    }
-
-    /* Gradient arka plan efektleri */
-    .gradient-shadow {
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Hover efektleri */
-    .hover-lift {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-        .hover-lift:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+@section Styles {
+    <style>
+        .card-hover {
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-</style>
+
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.15) !important;
+            }
+
+        .avatar-lg {
+            width: 64px;
+            height: 64px;
+        }
+
+        .avatar-sm {
+            width: 40px;
+            height: 40px;
+        }
+
+        .message-item {
+            transition: background-color 0.2s;
+        }
+
+            .message-item:hover {
+                background-color: rgba(0,0,0,0.02);
+            }
+
+        .log-row:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+
+        .progress {
+            border-radius: 10px;
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .progress-bar {
+            border-radius: 10px;
+            transition: width 0.6s ease;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // 📊 Haftalık Mesaj Trendi Grafiği
+        const weeklyCanvas = document.getElementById('weeklyMessagesChart');
+        if (weeklyCanvas) {
+            const labels = JSON.parse(weeklyCanvas.dataset.labels);
+            const totals = JSON.parse(weeklyCanvas.dataset.totals);
+            const unread = JSON.parse(weeklyCanvas.dataset.unread);
+
+            new Chart(weeklyCanvas, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Toplam Mesaj',
+                            data: totals,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#667eea',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: 'Okunmamış',
+                            data: unread,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#ef4444',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            usePointStyle: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 🥧 Mesaj Durumu Pasta Grafiği
+        const statusCanvas = document.getElementById('messageStatusChart');
+        if (statusCanvas) {
+            const read = Number(statusCanvas.dataset.read);
+            const unread = Number(statusCanvas.dataset.unread);
+
+            new Chart(statusCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Okundu', 'Okunmadı'],
+                    datasets: [{
+                        data: [read, unread],
+                        backgroundColor: [
+                            '#22c55e',
+                            '#ef4444'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            padding: 12,
+                            bodyFont: {
+                                size: 13
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    var label = context.label || '';
+                                    var value = context.parsed || 0;
+                                    var total = read + unread;
+                                    var percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                    return label + ': ' + value + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        // 🔄 Hata sayısını her 30 saniyede bir güncelle
+        setInterval(async function() {
+            try {
+                const response = await fetch('@Url.Action("GetErrorCount", "Dashboard", new { area = "Admin" })');
+                const data = await response.json();
+                document.getElementById('errorCountDisplay').textContent = data.count;
+            } catch (error) {
+                console.error('Hata sayısı güncellenirken bir sorun oluştu:', error);
+            }
+        }, 30000); // 30 saniye
+    </script>
+}

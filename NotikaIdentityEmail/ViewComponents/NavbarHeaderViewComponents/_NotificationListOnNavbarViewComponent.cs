@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using NotikaIdentityEmail.Context;
 
 namespace NotikaIdentityEmail.ViewComponents.NavbarHeaderViewComponents
 {
-    public class _NotificationListOnNavbarViewComponent:ViewComponent
+    public class _NotificationListOnNavbarViewComponent : ViewComponent
     {
         private readonly EmailContext _emailContext;
 
@@ -11,9 +12,12 @@ namespace NotikaIdentityEmail.ViewComponents.NavbarHeaderViewComponents
         {
             _emailContext = emailContext;
         }
-        public IViewComponentResult Invoke()
+        public async Task<IViewComponentResult> InvokeAsync()
         {
-            var values=_emailContext.Notifications.ToList();
+            var values = await _emailContext.Notifications
+                .OrderByDescending(x => x.NotificationId)
+                .Take(5)
+                .ToListAsync();
             return View(values);
         }
     }
