@@ -24,24 +24,50 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+// --------------------------------------------------
+// LOGGING
+// --------------------------------------------------
 builder.Logging.ClearProviders();
 builder.Services.AddSingleton<ILoggerProvider, ElasticLoggerProvider>();
 
+// --------------------------------------------------
+// DB
+// --------------------------------------------------
 builder.Services.AddDbContext<EmailContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? "Server=localhost\\SQLEXPRESS;initial Catalog=NotikaEmailDb;integrated security=true;trustServerCertificate=true"
+        ?? "Server=localhost\\SQLEXPRESS;Database=NotikaEmailDb;Integrated Security=true;TrustServerCertificate=true"
     ));
 
+// --------------------------------------------------
+// IDENTITY
+// --------------------------------------------------
 builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddEntityFrameworkStores<EmailContext>()
     .AddErrorDescriber<CustomIdentityValidator>()
     .AddTokenProvider<DataProtectorTokenProvider<AppUser>>(TokenOptions.DefaultProvider);
 
-builder.Services.Configure<JwtSettingsModel>(builder.Configuration.GetSection("JwtSettingsKey"));
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+// 🔴 KRİTİK: Identity email doğrulama kilidini KALDIRIYORUZ
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
+    options.SignIn.RequireConfirmedEmail = false;
 
+    options.User.RequireUniqueEmail = true;
+});
+
+// --------------------------------------------------
+// CONFIG
+// --------------------------------------------------
+builder.Services.Configure<JwtSettingsModel>(
+    builder.Configuration.GetSection("JwtSettingsKey"));
+
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
+
+// --------------------------------------------------
+// SERVICES
+// --------------------------------------------------
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IRegisterService, RegisterService>();
@@ -49,27 +75,31 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
-// ✅ DÜZELTME: HttpClient factory kullanımı
-builder.Services.AddHttpClient<ElasticLogService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddSingleton<IHtmlSanitizerService, HtmlSanitizerService>();
 
-// ✅ YENİ: Elasticsearch index template setup
+builder.Services.AddHttpClient<ElasticLogService>();
 builder.Services.AddHostedService<ElasticIndexSetupService>();
 
-builder.Services.AddSingleton<IHtmlSanitizerService, HtmlSanitizerService>();
-builder.Services.AddScoped<IMessageService, MessageService>();
+// --------------------------------------------------
+// AUTH
+// --------------------------------------------------
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 })
-.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+.AddCookie(options =>
 {
     options.LoginPath = "/Login/UserLogin";
     options.AccessDeniedPath = "/Error/403";
 })
-.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, opt =>
+.AddJwtBearer(opt =>
 {
-    var jwtSettings = builder.Configuration.GetSection("JwtSettingsKey").Get<JwtSettingsModel>();
+    var jwtSettings = builder.Configuration
+        .GetSection("JwtSettingsKey")
+        .Get<JwtSettingsModel>();
+
     opt.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -78,7 +108,8 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings!.Issuer,
         ValidAudience = jwtSettings.Audience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwtSettings.Key))
     };
 });
 
@@ -89,20 +120,23 @@ builder.Services.AddAuthorization(options =>
         .Build();
 });
 
-builder.Services.AddSignalR();
+// --------------------------------------------------
+// MVC + SIGNALR
+// --------------------------------------------------
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
-
-
-// ✅ YENİ: User email enrichment middleware
+// --------------------------------------------------
+// MIDDLEWARE
+// --------------------------------------------------
 app.Use(async (context, next) =>
 {
-    var userEmail = context.User?.Identity?.Name ?? context.User?.Claims
-        .FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+    var userEmail = context.User?.Identity?.Name
+        ?? context.User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-    if (!string.IsNullOrEmpty(userEmail))
+    if (!string.IsNullOrWhiteSpace(userEmail))
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
         using (logger.BeginScope(new Dictionary<string, object?> { ["UserEmail"] = userEmail }))
@@ -132,8 +166,8 @@ app.UseAuthorization();
 app.MapStaticAssets();
 
 app.MapControllerRoute(
- name: "areas",
- pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",
@@ -142,6 +176,9 @@ app.MapControllerRoute(
 
 app.MapHub<NotificationHub>("/hubs/notification");
 
+// --------------------------------------------------
+// START
+// --------------------------------------------------
 try
 {
     var logger = app.Services.GetRequiredService<ILogger<Program>>();
@@ -149,6 +186,7 @@ try
     {
         logger.LogInformation(SystemLogMessages.SystemStarted);
     }
+
     app.Run();
 }
 catch (Exception ex)

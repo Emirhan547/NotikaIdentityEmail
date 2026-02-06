@@ -1,8 +1,9 @@
-﻿using Microsoft.Extensions.Options;
+﻿using MailKit.Net.Smtp;
+using MailKit.Security;
+using Microsoft.Extensions.Options;
+using MimeKit;
 using NotikaIdentityEmail.Logging;
 using NotikaIdentityEmail.Models;
-using MimeKit;
-using MailKit.Net.Smtp;
 
 namespace NotikaIdentityEmail.Services.EmailServices
 {
@@ -10,7 +11,10 @@ namespace NotikaIdentityEmail.Services.EmailServices
     {
         private readonly EmailSettings _emailSettings;
         private readonly ILogger<EmailService> _logger;
-        public EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailService> logger)
+
+        public EmailService(
+            IOptions<EmailSettings> emailSettings,
+            ILogger<EmailService> logger)
         {
             _emailSettings = emailSettings.Value;
             _logger = logger;
@@ -18,49 +22,43 @@ namespace NotikaIdentityEmail.Services.EmailServices
 
         public async Task SendAsync(string to, string subject, string body)
         {
-           
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(
+                _emailSettings.SenderName,
+                _emailSettings.SenderEmail));
 
-            try
+            message.To.Add(MailboxAddress.Parse(to));
+            message.Subject = subject;
+
+            message.Body = new BodyBuilder
             {
-                var message = new MimeMessage();
-                message.From.Add(new MailboxAddress(
-                    _emailSettings.SenderName,
-                    _emailSettings.SenderEmail));
+                HtmlBody = body
+            }.ToMessageBody();
 
-                message.To.Add(MailboxAddress.Parse(to));
-                message.Subject = subject;
+            using var smtp = new SmtpClient();
 
-                message.Body = new BodyBuilder
-                {
-                    HtmlBody = body
-                }.ToMessageBody();
+            var secureOption = _emailSettings.UseSsl
+                ? SecureSocketOptions.SslOnConnect   // 465
+                : SecureSocketOptions.StartTls;      // 587
 
-                using var client = new SmtpClient();
+            await smtp.ConnectAsync(
+                _emailSettings.SmtpServer,
+                _emailSettings.SmtpPort,
+                secureOption);
 
-                await client.ConnectAsync(
-                    _emailSettings.SmtpServer,
-                    _emailSettings.SmtpPort,
-                    _emailSettings.UseSsl);
+            await smtp.AuthenticateAsync(
+                _emailSettings.Username,
+                _emailSettings.Password);
 
-                await client.AuthenticateAsync(
-                    _emailSettings.Username,
-                    _emailSettings.Password);
+            await smtp.SendAsync(message);
+            await smtp.DisconnectAsync(true);
 
-                await client.SendAsync(message);
-                await client.DisconnectAsync(true);
-
-              
-            }
-            catch (Exception ex)
+            using (_logger.BeginScope(BuildSystemScope(to)))
             {
-                using (_logger.BeginScope(BuildSystemScope(to)))
-                {
-                    _logger.LogError(ex, LogMessages.UnexpectedError);
-                }
-                throw;
+                _logger.LogInformation("E-posta başarıyla gönderildi");
             }
-
         }
+
         private static Dictionary<string, object?> BuildSystemScope(string? userEmail)
         {
             var scope = new Dictionary<string, object?>
