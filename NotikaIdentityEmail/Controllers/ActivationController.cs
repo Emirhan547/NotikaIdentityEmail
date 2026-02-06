@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NotikaIdentityEmail.Entities;
 using NotikaIdentityEmail.Logging;
@@ -7,6 +8,7 @@ using NotikaIdentityEmail.Models;
 
 namespace NotikaIdentityEmail.Controllers
 {
+    [AllowAnonymous]
     public class ActivationController : Controller
     {
         private readonly UserManager<AppUser> _userManager;

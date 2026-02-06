@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NotikaIdentityEmail.Entities;
 using NotikaIdentityEmail.Models;
+using NotikaIdentityEmail.Services.RoleServices;
 
 namespace NotikaIdentityEmail.Areas.Admin.Controllers
 {
@@ -11,17 +12,15 @@ namespace NotikaIdentityEmail.Areas.Admin.Controllers
     [Authorize(Roles = "Admin")]
     public class RoleController : Controller
     {
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly UserManager<AppUser> _userManager;
+        private readonly IRoleService _roleService;
 
-        public RoleController(RoleManager<IdentityRole> roleManager, UserManager<AppUser> userManager)
+        public RoleController(IRoleService roleService)
         {
-            _roleManager = roleManager;
-            _userManager = userManager;
+            _roleService = roleService;
         }
         public async Task<IActionResult> RoleList()
         {
-            var roles = await _roleManager.Roles.ToListAsync();
+            var roles = await _roleService.GetRolesAsync();
             return View(roles);
         }
         public IActionResult CreateRole()
@@ -31,78 +30,65 @@ namespace NotikaIdentityEmail.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateRole(CreateRoleViewModel model)
         {
-            await _roleManager.CreateAsync(new IdentityRole
-            {
-                Name = model.RoleName,
-            });
+            await _roleService.CreateRoleAsync(model.RoleName);
             return RedirectToAction("RoleList");
         }
         public async Task<IActionResult> DeleteRole(string id)
         {
-            var values = await _roleManager.Roles.FirstOrDefaultAsync(x => x.Id == id);
-            await _roleManager.DeleteAsync(values);
+            var deleted = await _roleService.DeleteRoleAsync(id);
+            if (!deleted)
+            {
+                return NotFound();
+            }
             return RedirectToAction("RoleList");
         }
         [HttpGet]
         public async Task<IActionResult> UpdateRole(string id)
         {
-            var value = await _roleManager.Roles.FirstOrDefaultAsync(y => y.Id == id);
-            UpdateRoleViewModel updateRoleViewModel = new UpdateRoleViewModel()
+            var model = await _roleService.GetRoleForUpdateAsync(id);
+            if (model == null)
             {
-                RoleId = value.Id,
-                RoleName = value.Name
-            };
-            return View(updateRoleViewModel);
-
+                return NotFound();
+            }
+            return View(model);
         }
         [HttpPost]
         public async Task<IActionResult> UpdateRole(UpdateRoleViewModel model)
         {
-            var values = await _roleManager.Roles.FirstOrDefaultAsync(x => x.Id == model.RoleId);
-            values.Name = model.RoleName;
-            await _roleManager.UpdateAsync(values);
+            var updated = await _roleService.UpdateRoleAsync(model);
+            if (!updated)
+            {
+                return NotFound();
+            }
             return RedirectToAction("RoleList");
         }
         public async Task<IActionResult> UserList()
         {
-            var values = await _userManager.Users.ToListAsync();
-            return View(values);
+            var users = await _roleService.GetUsersAsync();
+            return View(users);
         }
         [HttpGet]
         public async Task<IActionResult> AssignRole(string id)
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == id);
-            TempData["userId"] = user.Id;
-            var roles = await _roleManager.Roles.ToListAsync();
-            var userRoles = await _userManager.GetRolesAsync(user);
-            List<RoleAssignViewModel> roleAssignViewModels = new List<RoleAssignViewModel>();
-            foreach (var item in roles)
+            var user = await _roleService.GetUserByIdAsync(id);
+            if (user == null)
             {
-                RoleAssignViewModel model = new RoleAssignViewModel();
-                model.RoleId = item.Id;
-                model.RoleName = item.Name;
-                model.RoleExist = userRoles.Contains(item.Name);
-                roleAssignViewModels.Add(model);
+                return NotFound();
             }
-            return View(roleAssignViewModels);
+            var roles = await _roleService.GetRoleAssignmentsForUserAsync(user);
+            TempData["userId"] = user.Id;
+            return View(roles);
         }
         [HttpPost]
         public async Task<IActionResult> AssignRole(List<RoleAssignViewModel> model)
         {
-            var userId = TempData["userId"].ToString(  );
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == userId);
-            foreach (var item in model)
+            var userId = TempData["userId"]?.ToString();
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                if (item.RoleExist)
-                {
-                    await _userManager.AddToRoleAsync(user, item.RoleName);
-                }
-                else
-                {
-                    await _userManager.RemoveFromRoleAsync(user, item.RoleName);
-                }
+                return BadRequest();
 
             }
+            await _roleService.AssignRolesAsync(userId, model);
             return RedirectToAction("RoleList");
         }
     }

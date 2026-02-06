@@ -124,6 +124,10 @@
                         <span class="material-symbols-outlined text-gray-400">settings</span>
                         <span class="text-sm font-medium">Settings</span>
                     </a>
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors" asp-area="" asp-controller="Login" asp-action="Logout">
+                        <span class="material-symbols-outlined text-gray-400">logout</span>
+                        <span class="text-sm font-medium">Çıkış Yap</span>
+                    </a>
                     <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors" href="#">
                         <span class="material-symbols-outlined text-gray-400">help</span>
                         <span class="text-sm font-medium">Documentation</span>
@@ -156,6 +160,7 @@
                         <span class="absolute top-2 right-2.5 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
                     </button>
                     <div class="h-8 w-[1px] bg-gray-200 mx-2"></div>
+
                     <button class="flex items-center gap-3 hover:bg-gray-100 p-1.5 rounded-lg transition-all" type="button">
                         <div class="text-right hidden sm:block">
                             <p class="text-sm font-semibold text-gray-900 leading-none">@User.Identity?.Name</p>

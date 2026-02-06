@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NotikaIdentityEmail.Areas.Admin.Models;
 using NotikaIdentityEmail.Context;
 using NotikaIdentityEmail.Entities;
+using NotikaIdentityEmail.Services.CategoryServices;
 
 namespace NotikaIdentityEmail.Areas.Admin.Controllers
 {
@@ -11,24 +12,22 @@ namespace NotikaIdentityEmail.Areas.Admin.Controllers
     [Authorize(Roles = "Admin")]
     public class CategoryController : Controller
     {
-        private readonly EmailContext _context;
+        private readonly ICategoryService _categoryService;
 
-        public CategoryController(EmailContext context)
+        public CategoryController(ICategoryService categoryService)
         {
-            _context = context;
+            _categoryService = categoryService;
         }
 
         public async Task<IActionResult> Index()
         {
-            var categories = await _context.Categories
-                .OrderBy(x => x.CategoryName)
-                .ToListAsync();
+            var categories = await _categoryService.GetAllAsync();
             return View(categories);
         }
 
         public IActionResult Create()
         {
-            return View(new CategoryFormViewModel { CategoryStatus = true });
+            return View(_categoryService.CreateDefaultModel());
         }
 
         [HttpPost]
@@ -39,15 +38,7 @@ namespace NotikaIdentityEmail.Areas.Admin.Controllers
                 return View(model);
             }
 
-            var category = new Category
-            {
-                CategoryName = model.CategoryName,
-                CategoryIconUrl = model.CategoryIconUrl ?? string.Empty,
-                CategoryStatus = model.CategoryStatus
-            };
-
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
+            await _categoryService.CreateAsync(model);
 
             return RedirectToAction(nameof(Index));
         }
@@ -55,19 +46,13 @@ namespace NotikaIdentityEmail.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var category = await _context.Categories.FirstOrDefaultAsync(x => x.CategoryId == id);
-            if (category == null)
+            var model = await _categoryService.GetEditModelAsync(id);
+            if (model == null)
             {
                 return NotFound();
             }
 
-            var model = new CategoryFormViewModel
-            {
-                CategoryId = category.CategoryId,
-                CategoryName = category.CategoryName,
-                CategoryIconUrl = category.CategoryIconUrl,
-                CategoryStatus = category.CategoryStatus
-            };
+           
 
             return View(model);
         }
@@ -80,17 +65,11 @@ namespace NotikaIdentityEmail.Areas.Admin.Controllers
                 return View(model);
             }
 
-            var category = await _context.Categories.FirstOrDefaultAsync(x => x.CategoryId == model.CategoryId);
-            if (category == null)
+            var updated = await _categoryService.UpdateAsync(model);
+            if (!updated)
             {
                 return NotFound();
             }
-
-            category.CategoryName = model.CategoryName;
-            category.CategoryIconUrl = model.CategoryIconUrl ?? string.Empty;
-            category.CategoryStatus = model.CategoryStatus;
-
-            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
@@ -98,14 +77,11 @@ namespace NotikaIdentityEmail.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-            var category = await _context.Categories.FirstOrDefaultAsync(x => x.CategoryId == id);
-            if (category == null)
+            var deleted = await _categoryService.DeleteAsync(id);
+            if (!deleted)
             {
                 return NotFound();
             }
-
-            _context.Categories.Remove(category);
-            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }

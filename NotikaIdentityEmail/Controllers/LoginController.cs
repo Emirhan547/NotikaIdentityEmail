@@ -4,22 +4,23 @@ using Microsoft.AspNetCore.Mvc;
 using NotikaIdentityEmail.Entities;
 using NotikaIdentityEmail.Logging;
 using NotikaIdentityEmail.Models;
+using NotikaIdentityEmail.Services.LoginServices;
+
 
 namespace NotikaIdentityEmail.Controllers
 {
     [AllowAnonymous]
     public class LoginController : Controller
     {
-        private readonly SignInManager<AppUser> _signInManager;
-        private readonly UserManager<AppUser> _userManager;
+       
+        private readonly ILoginService _loginService;
         private readonly ILogger<LoginController> _logger;
-        public LoginController(
-            SignInManager<AppUser> signInManager,
-           UserManager<AppUser> userManager,
-            ILogger<LoginController> logger)
+        
+
+        public LoginController(ILoginService loginService, ILogger<LoginController> logger)
         {
-            _signInManager = signInManager;
-            _userManager = userManager;
+           
+            _loginService = loginService;
             _logger = logger;
         }
 
@@ -40,8 +41,8 @@ namespace NotikaIdentityEmail.Controllers
                 return View(model);
             }
 
-            var user = await _userManager.FindByNameAsync(model.Username)
-                       ?? await _userManager.FindByEmailAsync(model.Username);
+           
+            var user = await _loginService.FindUserByUsernameOrEmailAsync(model.Username);
 
             if (user == null)
             {
@@ -65,14 +66,9 @@ namespace NotikaIdentityEmail.Controllers
                 return View(model);
             }
 
-            var result = await _signInManager.PasswordSignInAsync(
-                user,
-                model.Password,
-                model.RememberMe,
-                lockoutOnFailure: true
-            );
-
-            if (!result.Succeeded)
+           
+                var isSuccess = await _loginService.CheckPasswordSignInAsync(user, model.Password, model.RememberMe);
+            if (!isSuccess)
             {
                 using (_logger.BeginScope(BuildAuthScope(user.Email)))
                 {
@@ -88,23 +84,27 @@ namespace NotikaIdentityEmail.Controllers
                 _logger.LogInformation(AuthLogMessages.UserLoginSuccess);
             }
 
-            // 🎯 ROLE BASED REDIRECT
-            if (await _userManager.IsInRoleAsync(user, "Admin"))
+           
+                var target = await _loginService.ResolveRedirectActionAsync(user);
+            if (target == "AdminDashboard")
             {
                 return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
             }
 
-            if (await _userManager.IsInRoleAsync(user, "User"))
-            {
-                return RedirectToAction("Inbox", "Message");
-            }
+           
+                if (target == "UserInbox")
+                {
+                    return RedirectToAction("Inbox", "Message");
+                }
 
-            // ⚠️ Rolü olmayan kullanıcı
+          
             using (_logger.BeginScope(BuildAuthScope(user.Email)))
             {
                 _logger.LogWarning(LogMessages.UserRoleMissing);
             }
-            await _signInManager.SignOutAsync();
+          
+
+            await _loginService.SignOutAsync();
             ModelState.AddModelError("", "Kullanıcı rolü tanımlı değil");
             return View(model);
         }
@@ -113,28 +113,16 @@ namespace NotikaIdentityEmail.Controllers
         public async Task<IActionResult> Logout()
         {
             var username = User.Identity?.Name;
+            await _loginService.SignOutAsync();
 
-            await _signInManager.SignOutAsync();
-
-            if (!string.IsNullOrWhiteSpace(username))
-            {
-                using (_logger.BeginScope(BuildAuthScope(username)))
-                {
+            {               
                     _logger.LogInformation(AuthLogMessages.UserLogout);
-                }
-            }
-            else
-            {
-                using (_logger.BeginScope(BuildAuthScope()))
-                {
-                    _logger.LogInformation(AuthLogMessages.UserLogout);
-                }
-            }
-
-           
+             }
+          
 
             return RedirectToAction("UserLogin");
         }
+
         private static Dictionary<string, object?> BuildAuthScope(string? userEmail = null)
         {
             var scope = new Dictionary<string, object?>

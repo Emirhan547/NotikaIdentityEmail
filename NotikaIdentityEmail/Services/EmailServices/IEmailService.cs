@@ -1,4 +1,4 @@
-﻿namespace NotikaIdentityEmail.Services
+﻿namespace NotikaIdentityEmail.Services.EmailServices
 {
     public interface IEmailService
     {

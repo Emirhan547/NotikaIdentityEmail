@@ -46,7 +46,15 @@
                             </li>
                         }
 
-                       
+                        @if (User.Identity?.IsAuthenticated ?? false)
+                        {
+                            <li class="nav-item">
+                                <a asp-area="" asp-controller="Login" asp-action="Logout" class="nav-link" title="Çıkış Yap">
+                                    <span><i class="notika-icon notika-close"></i></span>
+                                    <div class="ntd-ctn"><span>Çıkış Yap</span></div>
+                                </a>
+                            </li>
+                        }
 
                     </ul>
                 </div>

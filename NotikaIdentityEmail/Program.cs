@@ -11,7 +11,14 @@ using NotikaIdentityEmail.Logging;
 using NotikaIdentityEmail.Models;
 using NotikaIdentityEmail.Models.IdentityModels;
 using NotikaIdentityEmail.Services;
-
+using NotikaIdentityEmail.Services.CategoryServices;
+using NotikaIdentityEmail.Services.CommentServices;
+using NotikaIdentityEmail.Services.DashboardServices;
+using NotikaIdentityEmail.Services.EmailServices;
+using NotikaIdentityEmail.Services.LoginServices;
+using NotikaIdentityEmail.Services.MessageServices;
+using NotikaIdentityEmail.Services.RegisterServices;
+using NotikaIdentityEmail.Services.RoleServices;
 using System.Security.Claims;
 using System.Text;
 
@@ -36,7 +43,12 @@ builder.Services.Configure<JwtSettingsModel>(builder.Configuration.GetSection("J
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddScoped<IEmailService, EmailService>();
-
+builder.Services.AddScoped<ILoginService, LoginService>();
+builder.Services.AddScoped<IRegisterService, RegisterService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 // ✅ DÜZELTME: HttpClient factory kullanımı
 builder.Services.AddHttpClient<ElasticLogService>();
 
@@ -44,7 +56,7 @@ builder.Services.AddHttpClient<ElasticLogService>();
 builder.Services.AddHostedService<ElasticIndexSetupService>();
 
 builder.Services.AddSingleton<IHtmlSanitizerService, HtmlSanitizerService>();
-
+builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;

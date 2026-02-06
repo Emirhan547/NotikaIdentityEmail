@@ -4,7 +4,7 @@ using NotikaIdentityEmail.Models;
 using MimeKit;
 using MailKit.Net.Smtp;
 
-namespace NotikaIdentityEmail.Services
+namespace NotikaIdentityEmail.Services.EmailServices
 {
     public class EmailService : IEmailService
     {
