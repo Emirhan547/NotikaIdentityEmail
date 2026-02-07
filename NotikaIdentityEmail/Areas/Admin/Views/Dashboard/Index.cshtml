@@ -112,7 +112,7 @@
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <p class="text-muted text-uppercase fw-semibold mb-1 small">24s Hata</p>
+                            <p class="text-muted text-uppercase fw-semibold mb-1 small">Son 24s Aktivite</p>
                             <h3 class="mb-0 fw-bold" id="errorCountDisplay">@Model.ErrorCountLast24h</h3>
                             <span class="badge bg-danger bg-opacity-10 text-danger small">
                                 <i class="fas fa-sync-alt fa-spin me-1"></i>Canlı
@@ -134,18 +134,17 @@
                         <div>
                             <h5 class="card-title mb-1 fw-bold">
                                 <i class="fas fa-chart-area text-primary me-2"></i>
-                                Son 7 Gün Mesaj Trendi
+                                Kategori Bazlı Mesaj Dağılımı
                             </h5>
-                            <p class="text-muted small mb-0">Günlük mesaj ve okunma durumu</p>
+                            <p class="text-muted small mb-0">Kategorilere göre toplam mesaj sayısı</p>
                         </div>
                     </div>
                 </div>
                 <div class="card-body" style="height: 400px;">
-                    <canvas id="weeklyMessagesChart"
+                    <canvas id="categoryMessagesChart"
                             style="height: 100% !important;"
-                            data-labels='@System.Text.Json.JsonSerializer.Serialize(Model.WeeklyMessageLabels)'
-                            data-totals='@System.Text.Json.JsonSerializer.Serialize(Model.WeeklyMessageCounts)'
-                            data-unread='@System.Text.Json.JsonSerializer.Serialize(Model.WeeklyUnreadMessageCounts)'>
+                            data-labels='@System.Text.Json.JsonSerializer.Serialize(Model.CategoryStats.Select(stat => stat.CategoryName))'
+                            data-totals='@System.Text.Json.JsonSerializer.Serialize(Model.CategoryStats.Select(stat => stat.MessageCount))'>
                     </canvas>
                 </div>
             </div>
@@ -431,7 +430,7 @@
                     <div class="mb-3">
                         <i class="fas fa-bell fa-3x text-warning"></i>
                     </div>
-                    <h4 class="fw-bold mb-1">@Model.NotificationCount</h4>
+                    <h4 class="fw-bold mb-1" id="adminNotificationCount">@Model.NotificationCount</h4>
                     <p class="text-muted mb-0 small">Bildirim</p>
                 </div>
             </div>
@@ -490,44 +489,24 @@
 
     <script>
         // 📊 Haftalık Mesaj Trendi Grafiği
-        const weeklyCanvas = document.getElementById('weeklyMessagesChart');
-        if (weeklyCanvas) {
-            const labels = JSON.parse(weeklyCanvas.dataset.labels);
-            const totals = JSON.parse(weeklyCanvas.dataset.totals);
-            const unread = JSON.parse(weeklyCanvas.dataset.unread);
+        const categoryCanvas = document.getElementById('categoryMessagesChart');
+         if (categoryCanvas) {
+             const labels = JSON.parse(categoryCanvas.dataset.labels);
+             const totals = JSON.parse(categoryCanvas.dataset.totals);
 
-            new Chart(weeklyCanvas, {
-                type: 'line',
+             new Chart(categoryCanvas, {
+                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [
                         {
                             label: 'Toplam Mesaj',
                             data: totals,
+                            backgroundColor: 'rgba(102, 126, 234, 0.35)',
                             borderColor: '#667eea',
-                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: '#667eea',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 5,
-                            pointHoverRadius: 7
-                        },
-                        {
-                            label: 'Okunmamış',
-                            data: unread,
-                            borderColor: '#ef4444',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: '#ef4444',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 5,
-                            pointHoverRadius: 7
+                            borderWidth: 2,
+                            borderRadius: 8,
+                            maxBarThickness: 42
                         }
                     ]
                 },

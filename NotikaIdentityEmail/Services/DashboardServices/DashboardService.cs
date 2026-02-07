@@ -28,12 +28,11 @@ namespace NotikaIdentityEmail.Services.DashboardServices
 
         public async Task<DashboardViewModel> BuildDashboardAsync()
         {
-            var today = DateTime.Today;
-            var weekStart = today.AddDays(-6);
-            var culture = new CultureInfo("tr-TR");
+           
 
             var recentMessages = await _context.Messages
                 .Include(x => x.Category)
+
                 .OrderByDescending(x => x.SendDate)
                 .Take(6)
                 .Select(x => new RecentMessageViewModel
@@ -55,31 +54,10 @@ namespace NotikaIdentityEmail.Services.DashboardServices
                     MessageCount = group.Count()
                 })
                 .OrderByDescending(x => x.MessageCount)
-                .Take(6)
+                .Take(10)
                 .ToListAsync();
 
-            var weeklyRawData = await _context.Messages
-                .Where(x => x.SendDate.Date >= weekStart && x.SendDate.Date <= today)
-                .GroupBy(x => x.SendDate.Date)
-                .Select(group => new
-                {
-                    Date = group.Key,
-                    Total = group.Count(),
-                    Unread = group.Count(m => !m.IsRead)
-                })
-                .ToListAsync();
-
-            var weeklyMessageLabels = new List<string>();
-            var weeklyMessageCounts = new List<int>();
-            var weeklyUnreadMessageCounts = new List<int>();
-
-            for (var date = weekStart; date <= today; date = date.AddDays(1))
-            {
-                var row = weeklyRawData.FirstOrDefault(x => x.Date == date);
-                weeklyMessageLabels.Add(date.ToString("ddd", culture));
-                weeklyMessageCounts.Add(row?.Total ?? 0);
-                weeklyUnreadMessageCounts.Add(row?.Unread ?? 0);
-            }
+          
 
             var latestLogs = await _elasticLogService.GetLatestAsync(10);
             var errorCountLast24h = await _elasticLogService.GetErrorCountLast24hAsync();
@@ -91,14 +69,12 @@ namespace NotikaIdentityEmail.Services.DashboardServices
                 UnreadMessageCount = await _context.Messages.CountAsync(x => !x.IsRead && !x.IsDeleted),
                 DraftCount = await _context.Messages.CountAsync(x => x.IsDraft),
                 TrashCount = await _context.Messages.CountAsync(x => x.IsDeleted),
-                NotificationCount = await _context.Notifications.CountAsync(),
+                NotificationCount = await _context.Notifications.CountAsync(x => x.RecipientRole == "Admin"),
                 CommentCount = await _context.Comments.CountAsync(),
                 UserCount = await _userManager.Users.CountAsync(),
                 RecentMessages = recentMessages,
                 CategoryStats = categoryStats,
-                WeeklyMessageLabels = weeklyMessageLabels,
-                WeeklyMessageCounts = weeklyMessageCounts,
-                WeeklyUnreadMessageCounts = weeklyUnreadMessageCounts,
+               
                 LatestElasticLogs = latestLogs,
                 ErrorCountLast24h = errorCountLast24h,
                 ElasticsearchUrl = _configuration["Elastic:BaseUrl"],

@@ -22,7 +22,7 @@ namespace NotikaIdentityEmail.ViewComponents
             {
                 var userEmail = userValue.Email;
                 ViewBag.unreadMessageCount = _context.Messages.Count(x => x.ReceiverEmail == userEmail && !x.IsDeleted && !x.IsDraft && !x.IsRead);
-                ViewBag.notificationCount = _context.Notifications.Count();
+                ViewBag.notificationCount = _context.Notifications.Count(x => x.RecipientEmail == userEmail);
             }
             else
             {

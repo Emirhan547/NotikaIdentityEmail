@@ -66,8 +66,6 @@
                 <div class="bg-primary rounded-lg p-2 flex items-center justify-center">
                     <span class="material-symbols-outlined text-white">mail</span>
                 </div>
-
-
                 <div>
                     <h1 class="text-lg font-bold leading-none">MailAdmin</h1>
                     <p class="text-xs text-gray-400 mt-1">Messaging System</p>
@@ -75,65 +73,75 @@
             </div>
 
             <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-                <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-3 mb-2">Main Menu</div>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary border-l-4 border-primary" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-3 mb-2">
+                    Main Menu
+                </div>
+
+                <!-- Dashboard -->
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary border-l-4 border-primary"
+                   asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
                     <span class="material-symbols-outlined">dashboard</span>
                     <span class="text-sm font-medium">Dashboard</span>
                 </a>
-                <div>
-                    <button class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors" type="button">
-                        <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined text-gray-400">email</span>
-                            <span class="text-sm font-medium">Messages</span>
-                        </div>
-                        <span class="material-symbols-outlined text-xs">expand_more</span>
-                    </button>
-                    <div class="ml-9 mt-1 space-y-1">
-                        <a class="block px-3 py-2 text-sm text-gray-400 hover:text-white" href="#">Inbox</a>
-                        <a class="block px-3 py-2 text-sm text-gray-400 hover:text-white" href="#">Sent Items</a>
-                        <a class="block px-3 py-2 text-sm text-gray-400 hover:text-white" href="#">Categories</a>
-                    </div>
-                </div>
 
+                <!-- User Management -->
                 <div>
-                    <button class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors" type="button">
+                    <button class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
+                            type="button">
                         <div class="flex items-center gap-3">
                             <span class="material-symbols-outlined text-gray-400">group</span>
                             <span class="text-sm font-medium">User Management</span>
                         </div>
                         <span class="material-symbols-outlined text-xs">expand_more</span>
                     </button>
+
                     <div class="ml-9 mt-1 space-y-1">
-                        <a class="block px-3 py-2 text-sm text-gray-400 hover:text-white" asp-area="Admin" asp-controller="Role" asp-action="UserList">Kullanıcı Listesi</a>
-                        <a class="block px-3 py-2 text-sm text-gray-400 hover:text-white" asp-area="Admin" asp-controller="Role" asp-action="RoleList">Rol Listesi</a>
-                        <a class="block px-3 py-2 text-sm text-gray-400 hover:text-white" asp-area="Admin" asp-controller="Role" asp-action="CreateRole">Yeni Rol</a>
+                        <a class="block px-3 py-2 text-sm text-gray-400 hover:text-white"
+                           asp-area="Admin" asp-controller="Role" asp-action="UserList">
+                            Kullanıcı Listesi
+                        </a>
+                        <a class="block px-3 py-2 text-sm text-gray-400 hover:text-white"
+                           asp-area="Admin" asp-controller="Role" asp-action="RoleList">
+                            Rol Listesi
+                        </a>
+                        <a class="block px-3 py-2 text-sm text-gray-400 hover:text-white"
+                           asp-area="Admin" asp-controller="Role" asp-action="CreateRole">
+                            Yeni Rol
+                        </a>
                     </div>
                 </div>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors" asp-area="Admin" asp-controller="Category" asp-action="Index">
+
+                <!-- Kategoriler -->
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
+                   asp-area="Admin" asp-controller="Category" asp-action="Index">
                     <span class="material-symbols-outlined text-gray-400">list_alt</span>
                     <span class="text-sm font-medium">Kategoriler</span>
                 </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors" asp-area="Admin" asp-controller="Log" asp-action="Index">
+
+                <!-- Logs -->
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
+                   asp-area="Admin" asp-controller="Log" asp-action="Index">
                     <span class="material-symbols-outlined text-gray-400">insights</span>
                     <span class="text-sm font-medium">Logs</span>
-                    <span id="adminErrorBadge" class="ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-semibold text-white" style="display:none;">0</span>
+                    <span id="adminErrorBadge"
+                          class="ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-semibold text-white"
+                          style="display:none;">0</span>
                 </a>
+
+                <!-- System -->
                 <div class="pt-4">
-                    <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-3 mb-2">System</div>
-                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors" asp-area="" asp-controller="Profile" asp-action="EditProfile">
-                        <span class="material-symbols-outlined text-gray-400">settings</span>
-                        <span class="text-sm font-medium">Settings</span>
-                    </a>
-                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors" asp-area="" asp-controller="Login" asp-action="Logout">
+                    <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-3 mb-2">
+                        System
+                    </div>
+
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
+                       asp-area="" asp-controller="Login" asp-action="Logout">
                         <span class="material-symbols-outlined text-gray-400">logout</span>
                         <span class="text-sm font-medium">Çıkış Yap</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors" href="#">
-                        <span class="material-symbols-outlined text-gray-400">help</span>
-                        <span class="text-sm font-medium">Documentation</span>
-                    </a>
                 </div>
             </nav>
+
             <div class="p-4 bg-black/20">
                 <div class="flex items-center gap-3 px-2">
                     <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
@@ -141,6 +149,7 @@
                 </div>
             </div>
         </aside>
+
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
             <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 flex-shrink-0">
                 <div class="flex items-center gap-8">
@@ -158,6 +167,7 @@
                     <button class="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors" type="button">
                         <span class="material-symbols-outlined">notifications</span>
                         <span class="absolute top-2 right-2.5 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
+                        <span id="adminNotificationBadge" class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] leading-[18px] text-center hidden">0</span>
                     </button>
                     <div class="h-8 w-[1px] bg-gray-200 mx-2"></div>
 
@@ -166,7 +176,9 @@
                             <p class="text-sm font-semibold text-gray-900 leading-none">@User.Identity?.Name</p>
                             <p class="text-xs text-gray-500 mt-1">Super Admin</p>
                         </div>
-                        <div class="w-10 h-10 rounded-full bg-cover bg-center ring-2 ring-gray-100" data-alt="User profile avatar portrait" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAm7E1YLYe08sPS7XZOnRG0K62U5Vz9vG-l0aWVhAqDc9xc3Moi6sze9eriR1X7KwzLy45VRKcg4aZPUb4awib2X5AQF6mpd5k2l32tZPlQ6-O5hMffdsxf6cIHJsdfrBSdJ-wsZ7IhRjDDJT_T_1TcY_tSNeim_ym3r3FdsMg4cF8h0XgHHyRezXHaRIs96tiNFKykRees9dtkSHwxgw_f8hxk9E7mXCtYx2kjufDbayhgYoXMEZM5iG_34DO_HJJAPF2Xn7WuR_4c')"></div>
+                        <div class="w-10 h-10 rounded-full bg-cover bg-center ring-2 ring-gray-100"
+                             style="background-image: url('/imgs/ben.jpg')">
+                        </div>
                     </button>
                 </div>
             </header>
@@ -201,7 +213,30 @@
                 badge.textContent = (current + 1).toString();
                 badge.style.display = "inline-block";
             }
+            function updateNotificationBadge(increment = 1) {
+                const badge = document.getElementById("adminNotificationBadge");
+                if (!badge) return;
 
+                const current = parseInt(badge.textContent || "0", 10) || 0;
+                const nextValue = current + increment;
+                badge.textContent = nextValue.toString();
+                badge.classList.toggle("hidden", nextValue <= 0);
+
+                const dashboardCount = document.getElementById("adminNotificationCount");
+                if (dashboardCount) {
+                    dashboardCount.textContent = nextValue.toString();
+                }
+            }
+
+            const initialAdminCount = document.getElementById("adminNotificationCount");
+            if (initialAdminCount) {
+                const initialValue = parseInt(initialAdminCount.textContent || "0", 10) || 0;
+                const badge = document.getElementById("adminNotificationBadge");
+                if (badge) {
+                    badge.textContent = initialValue.toString();
+                    badge.classList.toggle("hidden", initialValue <= 0);
+                }
+            }
             connection.start()
                 .then(() => connection.invoke("JoinUserGroup", "admins"))
                 .catch(err => console.error("SignalR admin error:", err));
@@ -220,7 +255,19 @@
                 });
             });
 
+             connection.on("NewNotification", function (data) {
+                updateNotificationBadge(1);
 
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: data.title || 'Yeni Bildirim',
+                    text: data.detail || 'Yeni bir bildirim oluştu.',
+                    showConfirmButton: false,
+                    timer: 3500
+                });
+            });
             setInterval(async function () {
                 try {
                     const response = await fetch('/Admin/Dashboard/GetErrorCount');

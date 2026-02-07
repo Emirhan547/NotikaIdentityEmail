@@ -241,6 +241,37 @@ namespace NotikaIdentityEmail.Services.MessageServices
                         sendDate = message.SendDate.ToString("dd.MM.yyyy HH:mm"),
                         messageId = message.MessageId
                     });
+                var receiverNotification = await CreateNotificationAsync(
+                   title: "Yeni Mesaj",
+                   detail: $"{message.SenderEmail} size \"{message.Subject}\" mesajı gönderdi.",
+                   recipientEmail: message.ReceiverEmail,
+                   recipientRole: null);
+
+                await _hubContext.Clients
+                    .Group(message.ReceiverEmail)
+                    .SendAsync("NewNotification", new
+                    {
+                        title = receiverNotification.Title,
+                        detail = receiverNotification.Detail,
+                        imageUrl = receiverNotification.ImageUrl,
+                        createdAt = receiverNotification.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                    });
+
+                var adminNotification = await CreateNotificationAsync(
+                    title: "Yeni Mesaj Trafiği",
+                    detail: $"{message.SenderEmail} → {message.ReceiverEmail}: {message.Subject}",
+                    recipientEmail: null,
+                    recipientRole: "Admin");
+
+                await _hubContext.Clients
+                    .Group("admins")
+                    .SendAsync("NewNotification", new
+                    {
+                        title = adminNotification.Title,
+                        detail = adminNotification.Detail,
+                        imageUrl = adminNotification.ImageUrl,
+                        createdAt = adminNotification.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                    });
             }
 
             return message;
@@ -325,7 +356,21 @@ namespace NotikaIdentityEmail.Services.MessageServices
                     readerEmail,
                     subject = message.Subject
                 });
+            var senderNotification = await CreateNotificationAsync(
+                title: "Mesaj Okundu",
+                detail: $"{readerEmail}, \"{message.Subject}\" mesajını okudu.",
+                recipientEmail: message.SenderEmail,
+                recipientRole: null);
 
+            await _hubContext.Clients
+                .Group(message.SenderEmail)
+                .SendAsync("NewNotification", new
+                {
+                    title = senderNotification.Title,
+                    detail = senderNotification.Detail,
+                    imageUrl = senderNotification.ImageUrl,
+                    createdAt = senderNotification.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                });
             var categoryName = await GetCategoryNameAsync(message.CategoryId);
             using (BeginMessageScope(message.SenderEmail, message.ReceiverEmail, categoryName, LogContextValues.MessageStatusRead))
             {
@@ -378,6 +423,29 @@ namespace NotikaIdentityEmail.Services.MessageServices
             }
 
             return message.IsRead ? LogContextValues.MessageStatusRead : LogContextValues.MessageStatusUnread;
+        }
+        private async Task<Notification> CreateNotificationAsync(
+                    string title,
+                    string detail,
+                    string? recipientEmail,
+                    string? recipientRole,
+                    string? imageUrl = null)
+        {
+            var notification = new Notification
+            {
+                Title = title,
+                Detail = detail,
+                RecipientEmail = recipientEmail,
+                RecipientRole = recipientRole,
+                ImageUrl = imageUrl,
+                CreatedAt = DateTime.Now,
+                IsRead = false
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+
+            return notification;
         }
     }
 }

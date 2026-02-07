@@ -22,9 +22,7 @@ namespace NotikaIdentityEmail.Areas.Admin.Models
         // 🔥 Elasticsearch / Observability
         public int ErrorCountLast24h { get; set; }
         public List<ElasticLogItemDto> LatestElasticLogs { get; set; } = new();
-        public List<string> WeeklyMessageLabels { get; set; } = new();
-        public List<int> WeeklyMessageCounts { get; set; } = new();
-        public List<int> WeeklyUnreadMessageCounts { get; set; } = new();
+       
         // 🔧 Sistem / Konfig
         public string? ElasticsearchUrl { get; set; }
         public string? KibanaUrl { get; set; }

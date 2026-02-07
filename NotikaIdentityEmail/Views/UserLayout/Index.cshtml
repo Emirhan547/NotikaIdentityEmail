@@ -47,7 +47,44 @@
                 badge.textContent = (current + 1).toString();
                 badge.style.display = "inline-block";
             }
+                        function showNotificationBadgePlusOne() {
+                const badge = document.getElementById("notificationBadge");
+                if (!badge) return;
 
+                const current = parseInt(badge.textContent || "0", 10) || 0;
+                badge.textContent = (current + 1).toString();
+                badge.style.display = "inline-block";
+            }
+
+            function prependNotificationItem(data) {
+                const list = document.getElementById("notificationList");
+                if (!list) return;
+
+                const emptyState = list.querySelector(".hd-message-sn h3");
+                if (emptyState && emptyState.textContent?.trim() === "Bildirim yok") {
+                    list.innerHTML = "";
+                }
+
+                const detail = data.detail || "Yeni bir bildirim oluştu.";
+                const shortDetail = detail.length > 70 ? detail.substring(0, 70) + "..." : detail;
+                const imageUrl = data.imageUrl || "/notika-master/notika/green-horizotal/img/post/4.jpg";
+                const title = data.title || "Sistem Bildirimi";
+
+                const wrapper = document.createElement("a");
+                wrapper.href = "#";
+                wrapper.innerHTML = `
+                    <div class="hd-message-sn">
+                        <div class="hd-message-img">
+                            <img src="${imageUrl}" alt="Bildirim" />
+                        </div>
+                        <div class="hd-mg-ctn">
+                            <h3>${title}</h3>
+                            <p>${shortDetail}</p>
+                        </div>
+                    </div>`;
+
+                list.prepend(wrapper);
+            }
             // ✅ DÜZELTME: Geliştirilmiş hata yönetimi
             connection.start()
                 .then(() => connection.invoke("JoinUserGroup", userEmail))
@@ -94,7 +131,20 @@
                     timer: 3500
                 });
             });
+            connection.on("NewNotification", function (data) {
+                showNotificationBadgePlusOne();
+                prependNotificationItem(data);
 
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: data.title || 'Yeni Bildirim',
+                    text: data.detail || 'Yeni bir bildirim oluştu.',
+                    showConfirmButton: false,
+                    timer: 3500
+                });
+            });
             // ✅ Mesaj okundu
             connection.on("MessageRead", function (data) {
                 Swal.fire({

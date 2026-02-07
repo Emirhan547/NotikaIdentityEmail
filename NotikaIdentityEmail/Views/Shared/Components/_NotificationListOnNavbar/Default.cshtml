@@ -4,7 +4,7 @@
     <div class="hd-mg-tt">
         <h2>Bildirimler</h2>
     </div>
-    <div class="hd-message-info">
+    <div class="hd-message-info" id="notificationList">
         @if (Model.Any())
         {
           @foreach (var item in Model)
@@ -20,7 +20,7 @@
                             <img src="@(string.IsNullOrWhiteSpace(item.ImageUrl) ? "/notika-master/notika/green-horizotal/img/post/4.jpg" : item.ImageUrl)" alt="Bildirim" />
                         </div>
                         <div class="hd-mg-ctn">
-                            <h3>Sistem Bildirimi</h3>
+                            <h3>@(string.IsNullOrWhiteSpace(item.Title) ? "Sistem Bildirimi" : item.Title)</h3>
                             <p>@shortDetail</p>
                         </div>
                     </div>
