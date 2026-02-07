@@ -15,6 +15,7 @@ using NotikaIdentityEmail.Services.CategoryServices;
 using NotikaIdentityEmail.Services.CommentServices;
 using NotikaIdentityEmail.Services.DashboardServices;
 using NotikaIdentityEmail.Services.EmailServices;
+using NotikaIdentityEmail.Services.HuggingFaces;
 using NotikaIdentityEmail.Services.LoginServices;
 using NotikaIdentityEmail.Services.MessageServices;
 using NotikaIdentityEmail.Services.RegisterServices;
@@ -64,7 +65,8 @@ builder.Services.Configure<JwtSettingsModel>(
 
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
-
+builder.Services.Configure<HuggingFaceOptions>(
+    builder.Configuration.GetSection("HuggingFace"));
 // --------------------------------------------------
 // SERVICES
 // --------------------------------------------------
@@ -77,7 +79,8 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddSingleton<IHtmlSanitizerService, HtmlSanitizerService>();
-
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient<IHuggingFaceService, HuggingFaceService>();
 builder.Services.AddHttpClient<ElasticLogService>();
 builder.Services.AddHostedService<ElasticIndexSetupService>();
 

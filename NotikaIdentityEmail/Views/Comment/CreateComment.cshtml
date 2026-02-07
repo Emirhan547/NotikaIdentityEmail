@@ -1,10 +1,80 @@
-﻿<div style="margin-top:24px;border-top:1px dashed #d8e2ef;padding-top:20px;">
-    <h4 style="margin:0 0 14px;font-weight:700;color:#1d2f47;">📝 Yeni Yorum Ekle</h4>
-    <form asp-action="CreateComment" asp-controller="Comment" method="post">
-        <div class="form-group mb-3">
-            <label for="CommentDetail" style="font-weight:600;color:#48617d;">Mesajın</label>
-            <textarea name="CommentDetail" class="form-control" rows="5" required style="border-radius:10px;border-color:#d4deea;"></textarea>
+﻿<div style="
+    margin-top:28px;
+    border:1px solid #e6edf5;
+    border-radius:20px;
+    padding:22px 22px 20px;
+    background:linear-gradient(180deg,#ffffff,#f9fbfd);
+    box-shadow:0 12px 28px rgba(15,23,42,.06);
+">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div style="
+            width:36px;
+            height:36px;
+            border-radius:12px;
+            background:#00c292;
+            color:#fff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:700;
+        ">
+            ✍️
         </div>
-        <button type="submit" class="btn" style="background:#00c292;color:#fff;border-radius:999px;padding:10px 20px;font-weight:600;">Yorumu Gönder</button>
+        <div>
+            <h4 style="margin:0;font-weight:700;color:#1d2f47;">Yeni Yorum</h4>
+            <div style="font-size:12px;color:#7b8ca3;">
+                Topluluğa düşünceni bırak
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="CreateComment" asp-controller="Comment" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="form-group mb-3">
+            <textarea id="CommentDetail"
+                      name="CommentDetail"
+                      rows="4"
+                      maxlength="1000"
+                      required
+                      placeholder="Yorumunu yaz… saygılı olmayı unutma 🙂"
+                      class="form-control"
+                      style="
+                          border-radius:14px;
+                          border:1px solid #d4deea;
+                          padding:14px 16px;
+                          font-size:14px;
+                          line-height:1.6;
+                          resize:none;
+                          transition:.2s;
+                          box-shadow:0 8px 18px rgba(15,23,42,.04);
+                      "
+                      onfocus="this.style.borderColor='#00c292'"
+                      onblur="this.style.borderColor='#d4deea'">
+            </textarea>
+            <div style="font-size:11px;color:#9aa8bb;margin-top:6px;">
+                Maksimum 1000 karakter
+            </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;">
+            <button type="submit"
+                    onclick="this.disabled=true; this.innerText='Gönderiliyor…'; this.form.submit();"
+                    style="
+                        background:linear-gradient(120deg,#00c292,#0fb5e9);
+                        color:#fff;
+                        border:none;
+                        border-radius:999px;
+                        padding:10px 22px;
+                        font-weight:600;
+                        font-size:14px;
+                        box-shadow:0 10px 22px rgba(15,23,42,.15);
+                        transition:.2s;
+                    "
+                    onmouseover="this.style.transform='translateY(-1px)'"
+                    onmouseout="this.style.transform='translateY(0)'">
+                🚀 Yorumu Gönder
+            </button>
+        </div>
     </form>
 </div>

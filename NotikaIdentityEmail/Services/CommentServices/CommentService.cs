@@ -2,48 +2,62 @@
 using Microsoft.EntityFrameworkCore;
 using NotikaIdentityEmail.Context;
 using NotikaIdentityEmail.Entities;
+using NotikaIdentityEmail.Services.CommentServices;
+using NotikaIdentityEmail.Services.HuggingFaces;
 
-namespace NotikaIdentityEmail.Services.CommentServices
+public class CommentService : ICommentService
 {
-    public class CommentService:ICommentService
+    private readonly EmailContext _context;
+    private readonly UserManager<AppUser> _userManager;
+    private readonly IHuggingFaceService _huggingFaceService;
+
+    public CommentService(
+        EmailContext context,
+        UserManager<AppUser> userManager,
+        IHuggingFaceService huggingFaceService)
     {
-        private readonly EmailContext _context;
-        private readonly UserManager<AppUser> _userManager;
+        _context = context;
+        _userManager = userManager;
+        _huggingFaceService = huggingFaceService;
+    }
 
-        public CommentService(EmailContext context, UserManager<AppUser> userManager)
-        {
-            _context = context;
-            _userManager = userManager;
-        }
+    public async Task<bool> CreateCommentAsync(string username, Comment comment)
+    {
+        var user = await _userManager.FindByNameAsync(username);
+        if (user == null)
+            return false;
 
-        public async Task<List<Comment>> GetUserCommentsAsync(string username)
-        {
-            var user = await _userManager.FindByNameAsync(username);
-            if (user == null)
-            {
-                return new List<Comment>();
-            }
+        var analysis = await _huggingFaceService
+            .AnalyzeToxicityAsync(comment.CommentDetail);
 
-            return await _context.Comments
-                .Include(x => x.AppUser)
-                .Where(x => x.AppUserId == user.Id)
-                .ToListAsync();
-        }
+        comment.AppUserId = user.Id;
+        comment.CommentDate = DateTime.Now;
 
-        public async Task<bool> CreateCommentAsync(string username, Comment comment)
-        {
-            var user = await _userManager.FindByNameAsync(username);
-            if (user == null)
-            {
-                return false;
-            }
+        // 🔑 NULL SAFE – ENTITY NON-NULLABLE
+        comment.IsToxic = analysis != null && analysis.IsToxic;
+        comment.ToxicityScore = analysis?.Score ?? 0;
+        comment.ToxicityLabel = analysis?.Label ?? "unknown";
 
-            comment.AppUserId = user.Id;
-            comment.CommentDate = DateTime.Now;
-            comment.CommentStatus = "Onay Bekliyor";
-            _context.Comments.Add(comment);
-            await _context.SaveChangesAsync();
-            return true;
-        }
+        comment.CommentStatus = comment.IsToxic
+            ? "Pasif"
+            : "Onay Bekliyor";
+
+        _context.Comments.Add(comment);
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+
+    public async Task<List<Comment>> GetUserCommentsAsync(string username)
+    {
+        var user = await _userManager.FindByNameAsync(username);
+        if (user == null)
+            return new List<Comment>();
+
+        return await _context.Comments
+            .Where(x => x.AppUserId == user.Id)
+            .OrderByDescending(x => x.CommentDate)
+            .ToListAsync();
     }
 }

@@ -1,0 +1,135 @@
+﻿@using NotikaIdentityEmail.Areas.Admin.Models
+@model List<AdminCommentViewModel>
+
+@{
+    ViewData["Title"] = "Yorum Yönetimi";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+    var totalCount = Model.Count;
+    var toxicCount = Model.Count(x => x.IsToxic);
+    var activeCount = Model.Count(x => x.Status == "Aktif");
+}
+
+<div class="space-y-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-semibold text-gray-900">Yorum Yönetimi</h1>
+            <p class="text-sm text-gray-500 mt-1">
+                Yorumları inceleyin, toksik analiz sonucunu görün ve durumu yönetin.
+            </p>
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
+                <p class="text-xs text-gray-400">Toplam Yorum</p>
+                <p class="text-lg font-semibold text-gray-900">@totalCount</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
+                <p class="text-xs text-gray-400">Aktif</p>
+                <p class="text-lg font-semibold text-emerald-600">@activeCount</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
+                <p class="text-xs text-gray-400">Toksik</p>
+                <p class="text-lg font-semibold text-rose-600">@toxicCount</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 class="text-lg font-semibold text-gray-900">Yorum Listesi</h2>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-100 text-sm">
+                <thead class="bg-gray-50 text-gray-500">
+                    <tr>
+                        <th class="px-6 py-3 text-left font-semibold">Kullanıcı</th>
+                        <th class="px-6 py-3 text-left font-semibold">Yorum</th>
+                        <th class="px-6 py-3 text-left font-semibold">Toksik Durum</th>
+                        <th class="px-6 py-3 text-left font-semibold">Durum</th>
+                        <th class="px-6 py-3 text-left font-semibold">Tarih</th>
+                        <th class="px-6 py-3 text-right font-semibold">İşlemler</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-100 text-gray-700">
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="px-6 py-10 text-center text-gray-400">
+                                Henüz yorum bulunmuyor.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model)
+                        {
+                            var toxicityBadge = string.IsNullOrWhiteSpace(item.ToxicityLabel)
+                            ? "bg-gray-100 text-gray-500"
+                            : item.IsToxic
+                            ? "bg-rose-100 text-rose-600"
+                            : "bg-emerald-100 text-emerald-600";
+
+                            var statusBadge = item.Status == "Aktif"
+                            ? "bg-emerald-100 text-emerald-600"
+                            : item.Status == "Pasif"
+                            ? "bg-gray-100 text-gray-500"
+                            : "bg-amber-100 text-amber-600";
+
+                            <tr class="align-top">
+                                <td class="px-6 py-4">
+                                    <div class="font-semibold text-gray-900">@item.Username</div>
+                                    <div class="text-xs text-gray-400">@item.FullName</div>
+                                </td>
+
+                                <td class="px-6 py-4 max-w-[360px]">
+                                    <p class="text-gray-700 leading-relaxed">@item.CommentDetail</p>
+                                </td>
+
+                                <td class="px-6 py-4">
+                                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold @toxicityBadge">
+                                        <span>@(item.ToxicityLabel ?? "Analiz Yok")</span>
+                                        @if (item.ToxicityScore.HasValue)
+                                        {
+                                            <span>%@Math.Round(item.ToxicityScore.Value * 100)</span>
+                                        }
+                            </div>
+                        </td>
+
+                        <td class="px-6 py-4">
+                            <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold @statusBadge">
+                                @item.Status
+                            </span>
+                        </td>
+
+                        <td class="px-6 py-4 text-gray-500">
+                            @item.CommentDate.ToString("dd.MM.yyyy HH:mm")
+                        </td>
+
+                        <td class="px-6 py-4 text-right">
+                            <form asp-area="Admin"
+                                  asp-controller="Comment"
+                                  asp-action="ToggleStatus"
+                                  method="post"
+                                  class="inline-flex">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.CommentId" />
+                                <button type="submit"
+                                        class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold shadow-sm transition-all
+                                                @(item.Status == "Aktif"
+                                                                                            ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                                                                            : "bg-amber-500 text-white hover:bg-amber-600")">
+                                    @(item.Status == "Aktif" ? "Pasife Al" : "Aktif Et")
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

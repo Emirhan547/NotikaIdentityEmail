@@ -23,28 +23,24 @@ namespace NotikaIdentityEmail.Controllers
             return View(comments);
         }
 
-        public async Task<IActionResult> UserCommentList()
-        {
-            var comments = await _commentService.GetUserCommentsAsync(User.Identity!.Name!);
-            return View(comments);
-        }
 
         [HttpGet]
         public PartialViewResult CreateComment()
         {
             return PartialView();
         }
-
         [HttpPost]
         public async Task<IActionResult> CreateComment(Comment comment)
         {
-            var created = await _commentService.CreateCommentAsync(User.Identity!.Name!, comment);
+            var created = await _commentService
+                .CreateCommentAsync(User.Identity!.Name!, comment);
+
             if (!created)
-            {
                 return Unauthorized();
-            }
+
             return RedirectToAction("UserCommentList");
         }
+
     }
 }
  
