@@ -1,104 +1,107 @@
 ﻿@model UserEditViewModel
-
 @{
-   
     ViewData["Title"] = "Profil Düzenle";
     Layout = "~/Views/UserLayout/Index.cshtml";
 }
 
-    <div class="inbox-area">
-        <div class="container">
-            <div class="row">
-                
-                            <div class="col-lg-10 col-lg-offset-1">
-                                <div class="card" style="border:none;border-radius:16px;box-shadow:0 12px 35px rgba(16,24,40,.08);overflow:hidden;">
-                                    <div style="padding:28px;background:linear-gradient(110deg,#6764f2,#00bcd4);color:#fff;">
-                                        <h2 style="margin:0;font-size:26px;font-weight:700;">Profilini Güncelle</h2>
-                                        <p style="margin:8px 0 0;opacity:.95;">Bilgilerini güncelle, hesabını daha güvenli hale getir.</p>
-                                    </div>
-                                   
-                                                        <div style="padding:26px;background:#fff;">
-                                                            <form method="post">
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="form-group">
-                                                                            <label>Ad</label>
-                                                                            <input type="text" class="form-control" asp-for="Name" placeholder="Adınız" style="border-radius:10px;" />
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
+<div class="inbox-area">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
 
-                                                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                                                    <div class="form-group">
-                                                                        <div class="nk-int-st">
-                                                                            <input type="text" class="form-control" asp-for="Surname" placeholder="Soyadınız">
-                                                                           
-                                                                                </div>
-                                                                            </div>
-                                                                       
-                                                                                    <div class="col-md-6">
-                                                                                        <div class="form-group">
-                                                                                            <label>Şehir</label>
-                                                                                            <input type="text" class="form-control" asp-for="City" placeholder="Şehriniz" style="border-radius:10px;" />
-                                                                                        </div>
-                                                                                    </div>
-                                                                               
-                                                                                            <div class="col-md-6">
-                                                                                                <div class="form-group">
-                                                                                                    <label>Telefon</label>
-                                                                                                    <input type="text" class="form-control" asp-for="PhoneNumber" placeholder="Telefon numaranız" style="border-radius:10px;" />
-                                                                                                </div>
-                                                                                            </div>
-                                                                                       
-                                                                                                    <div class="col-md-6">
-                                                                                                        <div class="form-group">
-                                                                                                            <label>Kullanıcı Adı</label>
-                                                                                                            <input type="text" class="form-control" asp-for="UserName" placeholder="Kullanıcı adınız" style="border-radius:10px;" />
-                                                                                                        </div>
-                                                                                                    </div>
-                                                                                                
-                                                                                                            <div class="col-md-6">
-                                                                                                                <div class="form-group">
-                                                                                                                    <label>E-Mail</label>
-                                                                                                                    <input type="email" class="form-control" asp-for="Email" placeholder="Email adresiniz" style="border-radius:10px;" />
-                                                                                                                </div>
-                                                                                                            </div>
-                                                                                                       
-                                                                                                                    <div class="col-md-12">
-                                                                                                                        <div class="form-group">
-                                                                                                                            <label>Profil Fotoğraf URL</label>
-                                                                                                                            <input type="text" class="form-control" asp-for="ImageUrl" placeholder="https://..." style="border-radius:10px;" />
-                                                                                                                        </div>
-                                                                                                                    </div>
-                                                                                                               
-                                                                                                                            <div class="col-md-6">
-                                                                                                                                <div class="form-group">
-                                                                                                                                    <label>Yeni Şifre</label>
-                                                                                                                                    <input type="password" class="form-control" asp-for="Password" placeholder="Şifreniz" style="border-radius:10px;" />
-                                                                                                                                </div>
-                                                                                                                            </div>
-                                                                                                                       
-                                                                                                                                    <div class="col-md-6">
-                                                                                                                                        <div class="form-group">
-                                                                                                                                            <label>Şifre Tekrar</label>
-                                                                                                                                            <input type="password" class="form-control" asp-for="PasswordConfirm" placeholder="Şifre tekrar" style="border-radius:10px;" />
-                                                                                                                                        </div>
-                                                                                                                                    </div>
-                                                                                                                              
-                                                                                                                                        <div class="col-md-12" style="margin-top:8px;">
-                                                                                                                                            <button class="btn" style="background:#6764f2;color:#fff;border-radius:999px;padding:10px 24px;font-weight:600;">Bilgileri Güncelle</button>
-                                                                                                                                        </div>
-                                                                                                                                    </div>
+                <div class="card" style="border:none;border-radius:16px;box-shadow:0 12px 35px rgba(16,24,40,.08);overflow:hidden;">
 
-
-
-                                                                                                                               
-
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- HEADER -->
+                    <div style="padding:28px;background:linear-gradient(110deg,#6764f2,#00bcd4);color:#fff;">
+                        <h2 style="margin:0;font-size:26px;font-weight:700;">Profilini Güncelle</h2>
+                        <p style="margin:8px 0 0;opacity:.95;">
+                            Bilgilerini güncelle, hesabını daha güvenli hale getir.
+                        </p>
                     </div>
+
+                    <!-- FORM -->
+                    <div style="padding:26px;background:#fff;">
+                        <form method="post">
+                            <div class="row">
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Ad</label>
+                                        <input asp-for="Name" class="form-control" placeholder="Adınız" style="border-radius:10px;" />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Soyad</label>
+                                        <input asp-for="Surname" class="form-control" placeholder="Soyadınız" style="border-radius:10px;" />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Şehir</label>
+                                        <input asp-for="City" class="form-control" placeholder="Şehriniz" style="border-radius:10px;" />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Telefon</label>
+                                        <input asp-for="PhoneNumber" class="form-control" placeholder="Telefon numaranız" style="border-radius:10px;" />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Kullanıcı Adı</label>
+                                        <input asp-for="UserName" class="form-control" placeholder="Kullanıcı adınız" style="border-radius:10px;" />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>E-Mail</label>
+                                        <input asp-for="Email" type="email" class="form-control" placeholder="Email adresiniz" style="border-radius:10px;" />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label>Profil Fotoğraf URL</label>
+                                        <input asp-for="ImageUrl" class="form-control" placeholder="https://..." style="border-radius:10px;" />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Yeni Şifre</label>
+                                        <input asp-for="Password" type="password" class="form-control" placeholder="Yeni şifre" style="border-radius:10px;" />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Şifre Tekrar</label>
+                                        <input asp-for="PasswordConfirm" type="password" class="form-control" placeholder="Şifre tekrar" style="border-radius:10px;" />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12 mt-3">
+                                    <button type="submit"
+                                            class="btn"
+                                            style="background:#6764f2;color:#fff;border-radius:999px;padding:10px 26px;font-weight:600;">
+                                        Bilgileri Güncelle
+                                    </button>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+
                 </div>
+
             </div>
-        
+        </div>
+    </div>
+</div>

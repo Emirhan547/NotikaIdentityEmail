@@ -27,23 +27,67 @@ namespace NotikaIdentityEmail.Controllers
         }
 
         // 📥 Inbox
-        public async Task<IActionResult> Inbox(string? query)
+        public async Task<IActionResult> Inbox(string? query, int page = 1)
         {
             var user = await GetCurrentUserAsync();
             if (user == null) return Unauthorized();
 
             var list = await _messageService.GetInboxAsync(user.Email!, query);
-            return View(list);
+            var orderedList = list
+                 .OrderByDescending(x => x.SendDate)
+                 .ToList();
+
+            const int pageSize = 10;
+            var totalCount = orderedList.Count;
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+            var currentPage = page < 1 ? 1 : page;
+            if (totalPages > 0 && currentPage > totalPages)
+            {
+                currentPage = totalPages;
+            }
+
+            var pagedList = orderedList
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.CurrentPage = currentPage;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.Query = query;
+
+            return View(pagedList);
         }
 
         // 📤 Sendbox
-        public async Task<IActionResult> Sendbox(string? query)
+        public async Task<IActionResult> Sendbox(string? query, int page = 1)
         {
             var user = await GetCurrentUserAsync();
             if (user == null) return Unauthorized();
 
             var list = await _messageService.GetSendboxAsync(user.Email!, query);
-            return View(list);
+            var orderedList = list
+                 .OrderByDescending(x => x.SendDate)
+                 .ToList();
+
+            const int pageSize = 10;
+            var totalCount = orderedList.Count;
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+            var currentPage = page < 1 ? 1 : page;
+            if (totalPages > 0 && currentPage > totalPages)
+            {
+                currentPage = totalPages;
+            }
+
+            var pagedList = orderedList
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.CurrentPage = currentPage;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.Query = query;
+
+            return View(pagedList);
         }
 
         // 👁 Message Detail

@@ -44,7 +44,23 @@ namespace NotikaIdentityEmail.Services.DashboardServices
                     IsRead = x.IsRead
                 })
                 .ToListAsync();
-
+            var recentComments = await _context.Comments
+                .Include(x => x.AppUser)
+                .OrderByDescending(x => x.CommentDate)
+                .Take(6)
+                .Select(comment => new AdminCommentViewModel
+                {
+                    CommentId = comment.CommentId,
+                    Username = comment.AppUser.UserName ?? string.Empty,
+                    FullName = $"{comment.AppUser.Name} {comment.AppUser.Surname}".Trim(),
+                    CommentDetail = comment.CommentDetail,
+                    ToxicityLabel = comment.ToxicityLabel,
+                    ToxicityScore = comment.ToxicityScore,
+                    IsToxic = comment.IsToxic,
+                    Status = comment.CommentStatus,
+                    CommentDate = comment.CommentDate
+                })
+                .ToListAsync();
             var categoryStats = await _context.Messages
                 .Include(x => x.Category)
                 .GroupBy(x => x.Category.CategoryName)
@@ -71,8 +87,10 @@ namespace NotikaIdentityEmail.Services.DashboardServices
                 TrashCount = await _context.Messages.CountAsync(x => x.IsDeleted),
                 NotificationCount = await _context.Notifications.CountAsync(x => x.RecipientRole == "Admin"),
                 CommentCount = await _context.Comments.CountAsync(),
+                ToxicCommentCount = await _context.Comments.CountAsync(x => x.IsToxic),
                 UserCount = await _userManager.Users.CountAsync(),
                 RecentMessages = recentMessages,
+                RecentComments = recentComments,
                 CategoryStats = categoryStats,
                
                 LatestElasticLogs = latestLogs,

@@ -1,108 +1,155 @@
-﻿<div class="main-menu-area mg-tb-40">
+﻿<div class="main-menu-area mg-tb-30">
     <div class="container">
         <div class="row">
-            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="col-lg-12">
                 <ul class="nav nav-tabs notika-menu-wrap menu-it-icon-pro">
+
                     @if (User.IsInRole("User"))
                     {
                         <li class="active">
-                            <a data-toggle="tab" href="#Home"><i class="notika-icon notika-house"></i> Ana Sayfa</a>
+                            <a data-toggle="tab" href="#Home">
+                                <i class="notika-icon notika-house"></i>
+                                <span>Ana Sayfa</span>
+                            </a>
                         </li>
+
                         <li>
-                            <a data-toggle="tab" href="#mailbox"><i class="notika-icon notika-mail"></i> Email</a>
+                            <a data-toggle="tab" href="#mailbox">
+                                <i class="notika-icon notika-mail"></i>
+                                <span>Mesajlar</span>
+                                <span id="inboxBadge"
+                                      class="badge badge-danger"
+                                      style="margin-left:6px; display:none;">
+                                    0
+                                </span>
+                            </a>
                         </li>
+
                         <li>
-                            <a data-toggle="tab" href="#Profile"><i class="notika-icon notika-edit"></i> Profil</a>
+                            <a data-toggle="tab" href="#Profile">
+                                <i class="notika-icon notika-edit"></i>
+                                <span>Profil</span>
+                            </a>
                         </li>
+
                         <li>
-                            <a data-toggle="tab" href="#Comments"><i class="notika-icon notika-chat"></i> Yorumlar</a>
+                            <a data-toggle="tab" href="#Comments">
+                                <i class="notika-icon notika-chat"></i>
+                                <span>Forum</span>
+                            </a>
                         </li>
                     }
+
                     @if (User.IsInRole("Admin"))
                     {
                         <li class="active">
-                            <a data-toggle="tab" href="#Admin"><i class="notika-icon notika-windows"></i> Yönetim</a>
+                            <a data-toggle="tab" href="#Admin">
+                                <i class="notika-icon notika-windows"></i>
+                                <span>Yönetim</span>
+                            </a>
                         </li>
                     }
+
                 </ul>
+
                 <div class="tab-content custom-menu-content">
+
                     @if (User.IsInRole("User"))
                     {
-                        <div id="Home" class="tab-pane active notika-tab-menu-bg animated flipInX">
+                        <div id="Home" class="tab-pane active notika-tab-menu-bg animated fadeIn">
                             <ul class="notika-main-menu-dropdown">
                                 <li>
-                                    <a asp-area="" asp-controller="Home" asp-action="Index">Dashboard</a>
+                                    <a asp-controller="Home" asp-action="Index">Dashboard</a>
                                 </li>
                                 <li>
-                                    <a asp-area="" asp-controller="Home" asp-action="Privacy">Gizlilik</a>
+                                    <a asp-controller="Home" asp-action="Privacy">Gizlilik</a>
                                 </li>
                             </ul>
                         </div>
-                        <div id="mailbox" class="tab-pane notika-tab-menu-bg animated flipInX">
-                            <ul class="notika-main-menu-dropdown">
-                                <li>
-                                    <span id="inboxBadge" class="badge badge-danger" style="display:none;">0</span>
 
-                                    <a asp-area="" asp-controller="Message" asp-action="Inbox">Gelen Kutusu</a>
+                        <div id="mailbox" class="tab-pane notika-tab-menu-bg animated fadeIn">
+                            <ul class="notika-main-menu-dropdown">
+                                <li>
+                                    <a asp-controller="Message" asp-action="Inbox">Gelen Kutusu</a>
                                 </li>
                                 <li>
-                                    <a asp-area="" asp-controller="Message" asp-action="Sendbox">Giden Kutusu</a>
+                                    <a asp-controller="Message" asp-action="Sendbox">Giden Kutusu</a>
                                 </li>
                                 <li>
-                                    <a asp-area="" asp-controller="Message" asp-action="Draft">Taslaklar</a>
+                                    <a asp-controller="Message" asp-action="Draft">Taslaklar</a>
                                 </li>
                                 <li>
-                                    <a asp-area="" asp-controller="Message" asp-action="Trash">Silinenler</a>
+                                    <a asp-controller="Message" asp-action="Trash">Silinenler</a>
                                 </li>
-                                <li>
-                                    <a asp-area="" asp-controller="Message" asp-action="ComposeMessage">Yeni Mesaj Oluştur</a>
+                                <li class="menu-highlight">
+                                    <a asp-controller="Message" asp-action="ComposeMessage">
+                                        Yeni Mesaj Oluştur
+                                    </a>
                                 </li>
                             </ul>
                         </div>
-                        <div id="Profile" class="tab-pane notika-tab-menu-bg animated flipInX">
+
+                        <div id="Profile" class="tab-pane notika-tab-menu-bg animated fadeIn">
                             <ul class="notika-main-menu-dropdown">
                                 <li>
-                                    <a asp-area="" asp-controller="Profile" asp-action="EditProfile">Profilim</a>
+                                    <a asp-controller="Profile" asp-action="EditProfile">Profilim</a>
                                 </li>
                                 <li>
-                                    <a asp-area="" asp-controller="PasswordChange" asp-action="ForgetPassword">Şifre Sıfırla</a>
+                                    <a asp-controller="PasswordChange" asp-action="ForgetPassword">
+                                        Şifre Sıfırla
+                                    </a>
                                 </li>
                                 <li>
-                                    <a asp-area="" asp-controller="Login" asp-action="Logout">Çıkış Yap</a>
+                                    <a asp-controller="Login"
+                                       asp-action="Logout"
+                                       title="Çıkış Yap">
+                                        <i class="notika-icon notika-close"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div id="Comments" class="tab-pane notika-tab-menu-bg animated fadeIn">
+                            <ul class="notika-main-menu-dropdown">
+                              
+                                <li>
+                                    <a asp-controller="Comment" asp-action="UserComments">
+                                        Yorum Yönetimim
+                                    </a>
                                 </li>
                             </ul>
                         </div>
                     }
-<div id="Comments" class="tab-pane notika-tab-menu-bg animated flipInX">
-                        <ul class="notika-main-menu-dropdown">
-                            <li>
-                                <a asp-area="" asp-controller="Comment" asp-action="UserComments">Forum Akışı</a>
-                            </li>
-                            <li>
-                                <a asp-area="" asp-controller="Comment" asp-action="UserCommentList">Yorum Yönetimim</a>
-                            </li>
-                        </ul>
-                    </div>
+
                     @if (User.IsInRole("Admin"))
                     {
-                        <div id="Admin" class="tab-pane active notika-tab-menu-bg animated flipInX">
+                        <div id="Admin" class="tab-pane active notika-tab-menu-bg animated fadeIn">
                             <ul class="notika-main-menu-dropdown">
                                 <li>
-                                    <a asp-area="Admin" asp-controller="Role" asp-action="UserList">Kullanıcı Listesi</a>
+                                    <a asp-area="Admin" asp-controller="Role" asp-action="UserList">
+                                        Kullanıcı Listesi
+                                    </a>
                                 </li>
                                 <li>
-                                    <a asp-area="Admin" asp-controller="Role" asp-action="RoleList">Rol Listesi</a>
+                                    <a asp-area="Admin" asp-controller="Role" asp-action="RoleList">
+                                        Rol Listesi
+                                    </a>
                                 </li>
                                 <li>
-                                    <a asp-area="Admin" asp-controller="Role" asp-action="CreateRole">Yeni Rol</a>
+                                    <a asp-area="Admin" asp-controller="Role" asp-action="CreateRole">
+                                        Yeni Rol
+                                    </a>
                                 </li>
                                 <li>
-                                    <a asp-area="" asp-controller="Login" asp-action="Logout">Çıkış Yap</a>
+                                    <a asp-controller="Login"
+                                       asp-action="Logout"
+                                       title="Çıkış Yap">
+                                        <i class="notika-icon notika-close"></i>
+                                    </a>
                                 </li>
                             </ul>
                         </div>
                     }
-
 
                 </div>
             </div>

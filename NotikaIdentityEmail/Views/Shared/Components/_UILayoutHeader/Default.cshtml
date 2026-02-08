@@ -5,20 +5,28 @@
                 <div class="logo-area">
                     @if (User.IsInRole("Admin"))
                     {
-                        <a asp-area="Admin" asp-controller="Role" asp-action="RoleList"><img src="/notika-master/notika/green-horizotal/img/logo/logo.png" alt="" /></a>
+                        <a asp-area="Admin" asp-controller="Role" asp-action="RoleList">
+                            <img src="/notika-master/notika/green-horizotal/img/logo/logo.png" alt="" />
+                        </a>
                     }
                     else
                     {
-                        <a asp-area="" asp-controller="Message" asp-action="Inbox"><img src="/notika-master/notika/green-horizotal/img/logo/logo.png" alt="" /></a>
+                        <a asp-area="" asp-controller="Message" asp-action="Inbox">
+                            <img src="/notika-master/notika/green-horizotal/img/logo/logo.png" alt="" />
+                        </a>
                     }
                 </div>
             </div>
+
             <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
                 <div class="header-top-menu">
                     <ul class="nav navbar-nav notika-top-nav">
+
                         <li class="nav-item dropdown">
-                            <a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><span><i class="notika-icon notika-search"></i></span></a>
-                            <div role="menu" class="dropdown-menu search-dd animated flipInX">
+                            <a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle">
+                                <span><i class="notika-icon notika-search"></i></span>
+                            </a>
+                            <div class="dropdown-menu search-dd animated flipInX">
                                 <div class="search-input">
                                     <i class="notika-icon notika-left-arrow"></i>
                                     <input type="text" />
@@ -31,27 +39,45 @@
                             @await Component.InvokeAsync("_MessageListOnNavbar")
 
                             <li class="nav-item nc-al">
-                                <a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><span><i class="notika-icon notika-alarm"></i></span><div class="spinner4 spinner-4"></div><div class="ntd-ctn"><span>@ViewBag.unreadMessageCount</span></div></a>
-
+                                <a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle">
+                                    <span><i class="notika-icon notika-alarm"></i></span>
+                                    <div class="spinner4 spinner-4"></div>
+                                    <div class="ntd-ctn">
+                                        <span>@ViewBag.unreadMessageCount</span>
+                                    </div>
+                                </a>
                                 @await Component.InvokeAsync("_NotificationListOnNavbar")
                             </li>
+
                             <li class="nav-item">
-                                <a asp-area="" asp-controller="Message" asp-action="Inbox" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><span><i class="notika-icon notika-menus"></i></span><div class="spinner4 spinner-4"></div><div class="ntd-ctn"><span id="notificationBadge">@ViewBag.notificationCount</span></div></a>
+                                <a asp-controller="Message" asp-action="Inbox" class="nav-link">
+                                    <span><i class="notika-icon notika-menus"></i></span>
+                                    <div class="spinner4 spinner-4"></div>
+                                    <div class="ntd-ctn">
+                                        <span id="notificationBadge">@ViewBag.notificationCount</span>
+                                    </div>
+                                </a>
                             </li>
                         }
+
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a asp-area="Admin" asp-controller="Role" asp-action="UserList" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><span><i class="notika-icon notika-windows"></i></span><div class="ntd-ctn"><span>Admin</span></div></a>
+                                <a asp-area="Admin" asp-controller="Role" asp-action="UserList" class="nav-link">
+                                    <span><i class="notika-icon notika-windows"></i></span>
+                                </a>
                             </li>
                         }
 
+                      
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
                             <li class="nav-item">
-                                <a asp-area="" asp-controller="Login" asp-action="Logout" class="nav-link" title="Çıkış Yap">
+                                <a asp-controller="Login"
+                                   asp-action="Logout"
+                                   class="nav-link"
+                                   title="Çıkış Yap">
                                     <span><i class="notika-icon notika-close"></i></span>
-                                    <div class="ntd-ctn"><span>Çıkış Yap</span></div>
                                 </a>
                             </li>
                         }

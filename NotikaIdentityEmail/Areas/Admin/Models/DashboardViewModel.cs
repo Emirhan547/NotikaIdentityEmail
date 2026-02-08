@@ -13,10 +13,12 @@ namespace NotikaIdentityEmail.Areas.Admin.Models
         public int TrashCount { get; set; }
         public int NotificationCount { get; set; }
         public int CommentCount { get; set; }
+        public int ToxicCommentCount { get; set; }
         public int CategoryCount { get; set; }
 
         // 🔹 DB'den gelen listeler
         public List<RecentMessageViewModel> RecentMessages { get; set; } = new();
+        public List<AdminCommentViewModel> RecentComments { get; set; } = new();
         public List<CategoryStatViewModel> CategoryStats { get; set; } = new();
 
         // 🔥 Elasticsearch / Observability

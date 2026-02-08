@@ -67,21 +67,21 @@
                     <span class="material-symbols-outlined text-white">mail</span>
                 </div>
                 <div>
-                    <h1 class="text-lg font-bold leading-none">MailAdmin</h1>
-                    <p class="text-xs text-gray-400 mt-1">Messaging System</p>
+                    <h1 class="text-lg font-bold leading-none">NotikaIdentity</h1>
+                    <p class="text-xs text-gray-400 mt-1">Admin</p>
                 </div>
             </div>
 
             <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
                 <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-3 mb-2">
-                    Main Menu
+                    Ana Menu
                 </div>
 
                 <!-- Dashboard -->
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary border-l-4 border-primary"
                    asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
                     <span class="material-symbols-outlined">dashboard</span>
-                    <span class="text-sm font-medium">Dashboard</span>
+                    <span class="text-sm font-medium">Ana Sayfa</span>
                 </a>
 
                 <!-- User Management -->
@@ -90,7 +90,7 @@
                             type="button">
                         <div class="flex items-center gap-3">
                             <span class="material-symbols-outlined text-gray-400">group</span>
-                            <span class="text-sm font-medium">User Management</span>
+                            <span class="text-sm font-medium">Kullanıcı İşlemleri</span>
                         </div>
                         <span class="material-symbols-outlined text-xs">expand_more</span>
                     </button>
@@ -136,7 +136,7 @@
                 <!-- System -->
                 <div class="pt-4">
                     <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-3 mb-2">
-                        System
+                        Sistem
                     </div>
 
                     <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
@@ -148,10 +148,7 @@
             </nav>
 
             <div class="p-4 bg-black/20">
-                <div class="flex items-center gap-3 px-2">
-                    <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
-                    <span class="text-xs text-gray-400">System v2.4.0-stable</span>
-                </div>
+               
             </div>
         </aside>
 
@@ -160,7 +157,7 @@
                 <div class="flex items-center gap-8">
                     <div class="relative w-72">
                         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl">search</span>
-                        <input class="w-full bg-gray-100 border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all" placeholder="Search records, users..." type="text" />
+                        <input class="w-full bg-gray-100 border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all" placeholder="Kullanıcıları Ara..." type="text" />
                     </div>
                     <nav class="hidden md:flex items-center gap-2 text-sm">
                         <a class="text-gray-500 hover:text-primary" href="#">Admin</a>
@@ -179,7 +176,7 @@
                     <button class="flex items-center gap-3 hover:bg-gray-100 p-1.5 rounded-lg transition-all" type="button">
                         <div class="text-right hidden sm:block">
                             <p class="text-sm font-semibold text-gray-900 leading-none">@User.Identity?.Name</p>
-                            <p class="text-xs text-gray-500 mt-1">Super Admin</p>
+                            <p class="text-xs text-gray-500 mt-1">Admin</p>
                         </div>
                         <div class="w-10 h-10 rounded-full bg-cover bg-center ring-2 ring-gray-100"
                              style="background-image: url('/imgs/ben.jpg')">

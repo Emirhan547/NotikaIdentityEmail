@@ -24,7 +24,7 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <h1 class="display-5 fw-bold mb-2">
-                                <i class="fas fa-chart-line me-2"></i>Dashboard
+                                <i class="fas fa-chart-line me-2"></i>Ana Sayfa
                             </h1>
                             <p class="lead mb-0 opacity-90">
                                 Sistem metriklerinizi gerçek zamanlı takip edin
@@ -75,6 +75,7 @@
                         <div class="flex-grow-1 ms-3">
                             <p class="text-muted text-uppercase fw-semibold mb-1 small">Toplam Mesaj</p>
                             <h3 class="mb-0 fw-bold">@Model.MessageCount</h3>
+                            <p class="text-muted small mb-0">Toksik yorumlar: <span class="fw-semibold text-danger">@Model.ToxicCommentCount</span></p>
                         </div>
                     </div>
                 </div>
@@ -107,16 +108,25 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
-                            <div class="avatar-lg rounded-circle bg-danger bg-opacity-10 d-flex align-items-center justify-content-center">
-                                <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                            <div class="avatar-lg rounded-circle bg-info bg-opacity-10 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-chart-pie fa-2x text-info"></i>
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <p class="text-muted text-uppercase fw-semibold mb-1 small">Son 24s Aktivite</p>
-                            <h3 class="mb-0 fw-bold" id="errorCountDisplay">@Model.ErrorCountLast24h</h3>
-                            <span class="badge bg-danger bg-opacity-10 text-danger small">
-                                <i class="fas fa-sync-alt fa-spin me-1"></i>Canlı
-                            </span>
+                            <p class="text-muted text-uppercase fw-semibold mb-1 small">Okunma Oranı</p>
+                            <div class="d-flex align-items-center">
+                                <h3 class="mb-0 fw-bold me-2">%@readRate</h3>
+                                <span class="badge bg-info bg-opacity-10 text-info small">Canlı</span>
+                            </div>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar bg-info"
+                                     role="progressbar"
+                                     style="width: @readRate%"
+                                     aria-valuenow="@readRate"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -314,7 +324,68 @@
             </div>
         </div>
     </div>
+    <div class="row g-4 mb-4">
+        <!-- Son Yorumlar -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h5 class="card-title mb-0 fw-bold">
+                            <i class="fas fa-comments text-primary me-2"></i>
+                            Son Yorumlar
+                        </h5>
+                        <a asp-area="Admin" asp-controller="Comment" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                            Tümünü Gör <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @if (Model.RecentComments.Any())
+                        {
+                            foreach (var comment in Model.RecentComments)
+                            {
+                                var displayName = string.IsNullOrWhiteSpace(comment.FullName)
+                                ? comment.Username
+                                : comment.FullName;
+                                var toxicityClass = comment.IsToxic ? "bg-danger" : "bg-success";
+                                var toxicityLabel = comment.IsToxic ? "Toksik" : "Temiz";
 
+                                <div class="list-group-item border-0 py-3 px-4">
+                                    <div class="d-flex w-100 align-items-start">
+                                        <div class="flex-shrink-0 me-3">
+                                            <div class="avatar-sm rounded-circle bg-light d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-user text-muted"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex w-100 justify-content-between align-items-start mb-1">
+                                                <h6 class="mb-0 fw-semibold">@displayName</h6>
+                                                <span class="badge @toxicityClass ms-2">@toxicityLabel</span>
+                                            </div>
+                                            <p class="mb-1 text-muted small">@comment.CommentDetail</p>
+                                            <p class="mb-0 text-muted small">
+                                                <i class="fas fa-clock me-1"></i>@comment.CommentDate.ToString("dd.MM.yyyy HH:mm")
+                                                <span class="mx-2">•</span>
+                                                <i class="fas fa-info-circle me-1"></i>@comment.Status
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="p-5 text-center text-muted">
+                                <i class="fas fa-comment-slash fa-3x mb-3 opacity-50"></i>
+                                <p class="mb-0">Henüz yorum bulunmuyor</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- 🔍 ELASTİCSEARCH & SİSTEM LOGLARı -->
     @if (Model.LatestElasticLogs != null && Model.LatestElasticLogs.Any())
     {

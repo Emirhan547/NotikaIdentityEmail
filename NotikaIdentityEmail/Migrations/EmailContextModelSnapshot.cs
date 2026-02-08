@@ -258,7 +258,7 @@ namespace NotikaIdentityEmail.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("NotikaIdentityEmail.Entities.Comment", b =>
@@ -298,7 +298,7 @@ namespace NotikaIdentityEmail.Migrations
 
                     b.HasIndex("AppUserId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("NotikaIdentityEmail.Entities.Message", b =>
@@ -350,7 +350,7 @@ namespace NotikaIdentityEmail.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("NotikaIdentityEmail.Entities.Notification", b =>
@@ -386,7 +386,7 @@ namespace NotikaIdentityEmail.Migrations
 
                     b.HasKey("NotificationId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

@@ -1,7 +1,7 @@
 ﻿@model List<MessageWithSenderInfoViewModel>
 
 @{
-    ViewData["Title"] = "Inbox";
+    ViewData["Title"] = "Gelen Kutusu";
     Layout = "~/Views/UserLayout/Index.cshtml";
 }
 
@@ -13,18 +13,25 @@
 
             <div class="col-lg-9 col-md-9 col-sm-9 col-xs-12">
                 <div class="inbox-text-list sm-res-mg-t-30">
-                   <style>
+
+                    <style>
                         .unread-message td,
                         .unread-message th {
                             font-weight: 600;
                         }
                     </style>
+
                     <form method="get" class="form-group">
                         <div class="nk-int-st search-input search-overt">
-                            <input type="text" class="form-control" name="query" value="@Context.Request.Query["query"]" placeholder="Aranacak kelimeleri giriniz..." />
+                            <input type="text"
+                                   class="form-control"
+                                   name="query"
+                                   value="@Context.Request.Query["query"]"
+                                   placeholder="Aranacak kelimeleri giriniz..." />
                             <button class="btn search-ib" type="submit">Ara</button>
-                    </div>
+                        </div>
                     </form>
+
                     <div class="inbox-btn-st-ls btn-toolbar">
                         <div class="btn-group ib-btn-gp active-hook nk-email-inbox">
                             <button class="btn btn-default btn-sm"><i class="notika-icon notika-refresh"></i> Yenile</button>
@@ -39,49 +46,116 @@
                             <button class="btn btn-default btn-sm"><i class="notika-icon notika-right-arrow"></i></button>
                         </div>
                     </div>
+
                     <div class="table-responsive">
                         <table class="table table-hover table-inbox">
 
-                            <tr>
-                                <th>#</th>
-                                <th>Gönderici</th>
-                                <th>Konu</th>
-                                <th>Kategori</th>
-                                <th>Gönderim Tarihi</th>
-                            </tr>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Gönderici</th>
+                                    <th>Konu</th>
+                                    <th>Kategori</th>
+                                    <th class="text-right">Gönderim Tarihi</th>
+                                </tr>
+                            </thead>
 
                             <tbody>
                                 @foreach (var item in Model)
                                 {
                                     <tr class="@(item.IsRead ? "" : "unread-message")">
-                                        <td class=""><label><input type="checkbox" class="i-checks"></label></td>
-                                        <th><a href="/Message/MessageDetail/@item.MessageId/">@item.SenderName @item.SenderSurname </a> </th>
-                                        <td><a href="/Message/MessageDetail/@item.MessageId/">@item.Subject </a> </td>
+                                        <td>
+                                            <label>
+                                                <input type="checkbox" class="i-checks">
+                                            </label>
+                                        </td>
+
+                                        <td>
+                                            <a href="/Message/MessageDetail/@item.MessageId/">
+                                                @item.SenderName @item.SenderSurname
+                                            </a>
+                                        </td>
+
+                                        <td>
+                                            <a href="/Message/MessageDetail/@item.MessageId/">
+                                                @item.Subject
+                                            </a>
+                                        </td>
+
                                         @{
                                             var labelClass = item.CategoryName switch
                                             {
                                                 "Eğitim" => "label-warning",
-                                                "Kampanyalar" => "label-info",
-                                                "Sosyal" => "label-success",
+                                                "Etkinlik" => "label-success",
                                                 "Finans" => "label-primary",
+                                                "İnsan Kaynakları" => "label-danger",
+                                                "Müşteri Geri Bildirim" => "label-info",
+                                                "Operasyon" => "label-default",
+                                                "Planlama" => "label-default",
+                                                "Raporlama" => "label-info",
+                                                "Risk Yönetimi" => "label-danger",
                                                 _ => "label-default"
                                             };
                                         }
-                                        <td><span class="label @labelClass"> @item.CategoryName </span> </td>
-                                        <td class="text-right mail-date">@item.SendDate.ToString("dd MMMM yyyy")</td>
+
+                                        <td>
+                                            <span class="label @labelClass">
+                                                @item.CategoryName
+                                            </span>
+                                        </td>
+
+                                        <td class="text-right mail-date">
+                                            @item.SendDate.ToString("dd MMMM yyyy")
+                                        </td>
                                     </tr>
                                 }
-
-
                             </tbody>
-                        </table>
 
+                        </table>
                     </div>
+
+                    @if (ViewBag.TotalPages != null && ViewBag.TotalPages > 1)
+                    {
+                        <div class="text-center">
+                            <ul class="pagination">
+                                <li class="@(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                                    <a asp-action="Inbox"
+                                       asp-route-page="@(ViewBag.CurrentPage - 1)"
+                                       asp-route-query="@ViewBag.Query"
+                                       aria-label="Önceki">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+
+                                @for (var i = 1; i <= ViewBag.TotalPages; i++)
+                                {
+                                    <li class="@(ViewBag.CurrentPage == i ? "active" : "")">
+                                        <a asp-action="Inbox"
+                                           asp-route-page="@i"
+                                           asp-route-query="@ViewBag.Query">
+                                            @i
+                                        </a>
+                                    </li>
+                                }
+
+                                <li class="@(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                                    <a asp-action="Inbox"
+                                       asp-route-page="@(ViewBag.CurrentPage + 1)"
+                                       asp-route-query="@ViewBag.Query"
+                                       aria-label="Sonraki">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.2/signalr.min.js"></script>
 
 <script>
@@ -99,6 +173,6 @@
 
     connection.on("NewMessage", function (data) {
         alert("📩 Yeni mesaj: " + data.subject + "\nGönderen: " + data.senderEmail);
-        location.reload(); // şimdilik basit
+        location.reload();
     });
 </script>
